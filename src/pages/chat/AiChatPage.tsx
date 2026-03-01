@@ -173,15 +173,15 @@ export default function AiChatPage() {
     };
 
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if ((e.key === 'Enter' || e.keyCode === 13) && !e.shiftKey) {
             e.preventDefault();
-            sendMessage(e);
+            sendMessage();
         }
     };
 
     // ─── Send message ────────────────────────
-    const sendMessage = async (e) => {
-        e?.preventDefault();
+    const sendMessage = async (e?: React.FormEvent | React.KeyboardEvent) => {
+        if (e && e.preventDefault) e.preventDefault();
         const text = input.trim();
         if (!text && !selectedDoc) return;
         if (loading) return;
