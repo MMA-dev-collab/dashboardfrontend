@@ -56,6 +56,15 @@ export default function Proposals() {
         } catch (err) { alert(err.response?.data?.message || 'Error'); }
     };
 
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this proposal?')) return;
+        try {
+            await api.delete(`/proposals/${id}`);
+            fetchProposals();
+            setSelected(null);
+        } catch (err) { alert(err.response?.data?.message || 'Error deleting proposal'); }
+    };
+
     const fmt = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v || 0);
     const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '---';
 
@@ -140,22 +149,29 @@ export default function Proposals() {
                                 <div className="detail-item"><span className="detail-label">Created</span><span>{fmtDate(selected.createdAt)}</span></div>
                             </div>
                         </div>
-                        <div className="modal-footer">
-                            {selected.status === 'DRAFT' && (
-                                <button className="btn btn-primary" onClick={() => updateStatus(selected.id, 'SENT')}>
-                                    <Send size={16} /> Mark as Sent
+                        <div className="modal-footer" style={{ justifyContent: 'space-between' }}>
+                            <div className="footer-left">
+                                <button className="btn btn-danger-outline" onClick={() => handleDelete(selected.id)}>
+                                    <X size={16} /> Delete Proposal
                                 </button>
-                            )}
-                            {selected.status === 'SENT' && (
-                                <>
-                                    <button className="btn btn-success" onClick={() => updateStatus(selected.id, 'ACCEPTED')}>
-                                        <CheckCircle size={16} /> Accepted
+                            </div>
+                            <div className="footer-right" style={{ display: 'flex', gap: '10px' }}>
+                                {selected.status === 'DRAFT' && (
+                                    <button className="btn btn-primary" onClick={() => updateStatus(selected.id, 'SENT')}>
+                                        <Send size={16} /> Mark as Sent
                                     </button>
-                                    <button className="btn btn-danger" onClick={() => updateStatus(selected.id, 'REJECTED')}>
-                                        <XCircle size={16} /> Rejected
-                                    </button>
-                                </>
-                            )}
+                                )}
+                                {selected.status === 'SENT' && (
+                                    <>
+                                        <button className="btn btn-success" onClick={() => updateStatus(selected.id, 'ACCEPTED')}>
+                                            <CheckCircle size={16} /> Accepted
+                                        </button>
+                                        <button className="btn btn-danger" onClick={() => updateStatus(selected.id, 'REJECTED')}>
+                                            <XCircle size={16} /> Rejected
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -55,6 +55,16 @@ export default function Expenses() {
         }
     };
 
+    const handleDeleteExpense = async (id) => {
+        if (!confirm('Permanently delete this expense record?')) return;
+        try {
+            await api.delete(`/expenses/${id}`);
+            fetchExpenses();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error deleting expense');
+        }
+    };
+
     const fmt = (v) => new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -121,6 +131,7 @@ export default function Expenses() {
                                     <th>Project / Ref</th>
                                     <th>Reported By</th>
                                     <th>Date</th>
+                                    <th className="text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -150,18 +161,23 @@ export default function Expenses() {
                                         </td>
                                         <td>
                                             <div className="partner-cell">
-                                                <div className="avatar micro">{e.user?.name?.charAt(0)}</div>
-                                                <span className="text-xs">{e.user?.name}</span>
+                                                <div className="avatar micro">{e.user?.firstName?.charAt(0)}</div>
+                                                <span className="text-xs">{e.user?.firstName} {e.user?.lastName}</span>
                                             </div>
                                         </td>
                                         <td>
                                             <span className="text-xs text-tertiary">{fmtDate(e.date)}</span>
                                         </td>
+                                        <td className="text-right">
+                                            <button className="mini-btn text-danger" onClick={() => handleDeleteExpense(e.id)}>
+                                                <X size={14} />
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))}
                                 {expenses.length === 0 && (
                                     <tr>
-                                        <td colSpan={6} className="text-center py-12 text-tertiary">
+                                        <td colSpan={7} className="text-center py-12 text-tertiary">
                                             No expense records found.
                                         </td>
                                     </tr>

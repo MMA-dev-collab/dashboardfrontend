@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Save, MessageSquare, Paperclip, Plus, CheckCircle, Circle, AlertCircle, Download, Loader } from 'lucide-react';
+import { X, Save, MessageSquare, Paperclip, Plus, CheckCircle, Circle, AlertCircle, Download, Loader, Trash2 } from 'lucide-react';
 import useBoardStore from '../../store/useBoardStore';
 import useAuthStore from '../../store/useAuthStore';
 import api from '../../api/client';
@@ -221,6 +221,19 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
         }
     };
 
+    const handleDeleteTask = async () => {
+        if (!confirm('Permanently delete this task?')) return;
+        setSubmitting(true);
+        try {
+            await api.delete(`/projects/${projectId}/tasks/${localTask.id}`);
+            boardStore.fetchBoardData(projectId);
+            onClose();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Error deleting task');
+            setSubmitting(false);
+        }
+    };
+
     return (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
             <div
@@ -236,6 +249,11 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
                         </span>
                     </div>
                     <div className="p-flex p-gap-2">
+                        {!isNew && (
+                            <button className="btn btn-danger-outline p-flex p-items-center p-gap-2" onClick={handleDeleteTask} disabled={submitting}>
+                                <Trash2 size={16} /> Delete
+                            </button>
+                        )}
                         <button className="btn btn-primary p-flex p-items-center p-gap-2" onClick={handleSave} disabled={submitting}>
                             {submitting ? <Loader size={14} className="spinning" /> : <Save size={16} />}
                             {submitting ? 'Saving...' : 'Save'}

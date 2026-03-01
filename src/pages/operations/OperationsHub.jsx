@@ -49,6 +49,18 @@ export default function OperationsHub() {
         catch (err) { alert('Error'); }
     };
 
+    const handleDeleteDecision = async (id) => {
+        if (!confirm('Permanently delete this decision?')) return;
+        try { await api.delete(`/operations/decisions/${id}`); fetchData(); }
+        catch (err) { alert('Delete failed'); }
+    };
+
+    const handleDeleteRisk = async (id) => {
+        if (!confirm('Permanently delete this risk flag?')) return;
+        try { await api.delete(`/operations/risks/${id}`); fetchData(); }
+        catch (err) { alert('Delete failed'); }
+    };
+
     const fmtDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     return (
@@ -80,7 +92,7 @@ export default function OperationsHub() {
                 <div className="card">
                     <div className="card-body p-0">
                         <table className="modern-table">
-                            <thead><tr><th>Decision</th><th>Context</th><th>Outcome</th><th>Author</th><th>Date</th></tr></thead>
+                            <thead><tr><th>Decision</th><th>Context</th><th>Outcome</th><th>Author</th><th>Date</th><th className="text-right">Action</th></tr></thead>
                             <tbody>
                                 {decisions.map(d => (
                                     <tr key={d.id}>
@@ -89,9 +101,12 @@ export default function OperationsHub() {
                                         <td><span className="text-sm">{d.outcome?.substring(0, 60) || 'Pending'}</span></td>
                                         <td><div className="partner-cell"><div className="avatar micro">{d.author?.firstName?.charAt(0)}</div><span className="text-xs">{d.author?.firstName}</span></div></td>
                                         <td><span className="text-xs text-tertiary">{fmtDate(d.createdAt)}</span></td>
+                                        <td className="text-right">
+                                            <button className="mini-btn text-danger" onClick={() => handleDeleteDecision(d.id)}><X size={14} /></button>
+                                        </td>
                                     </tr>
                                 ))}
-                                {decisions.length === 0 && <tr><td colSpan={5} className="text-center py-12 text-tertiary">No decisions logged yet.</td></tr>}
+                                {decisions.length === 0 && <tr><td colSpan={6} className="text-center py-12 text-tertiary">No decisions logged yet.</td></tr>}
                             </tbody>
                         </table>
                     </div>
@@ -110,7 +125,10 @@ export default function OperationsHub() {
                                         <td><span className="text-sm">{r.project?.name || 'General'}</span></td>
                                         <td>{r.isResolved ? <span className="status-badge success">Resolved</span> : <span className="status-badge warning">Active</span>}</td>
                                         <td className="text-right">
-                                            {!r.isResolved && <button className="mini-btn accent" onClick={() => resolveRisk(r.id)}><CheckCircle size={14} /></button>}
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                                {!r.isResolved && <button className="mini-btn accent" title="Resolve" onClick={() => resolveRisk(r.id)}><CheckCircle size={14} /></button>}
+                                                <button className="mini-btn text-danger" title="Delete" onClick={() => handleDeleteRisk(r.id)}><X size={14} /></button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

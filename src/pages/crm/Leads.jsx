@@ -77,6 +77,16 @@ export default function Leads() {
         }
     };
 
+    const handleDeleteLead = async (id) => {
+        if (!confirm('Are you sure you want to delete this lead?')) return;
+        try {
+            await api.delete(`/leads/${id}`);
+            fetchLeads();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error deleting lead');
+        }
+    };
+
     const fmt = (v) => v ? new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -138,7 +148,7 @@ export default function Leads() {
                                     <th>Pipeline Stage</th>
                                     <th>Expected Deal Size</th>
                                     <th>Acquisition Source</th>
-                                    <th className="text-right">Action</th>
+                                    <th className="text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -173,12 +183,22 @@ export default function Leads() {
                                             </div>
                                         </td>
                                         <td className="text-right">
-                                            {l.stage !== 'WON' && l.stage !== 'LOST' && (
-                                                <button className="convert-pill" onClick={() => handleConvert(l.id)}>
-                                                    <span>Convert to Project</span>
-                                                    <ArrowRight size={14} />
+                                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                                                {l.stage !== 'WON' && l.stage !== 'LOST' && (
+                                                    <button className="convert-pill" onClick={() => handleConvert(l.id)}>
+                                                        <span>Convert</span>
+                                                        <ArrowRight size={14} />
+                                                    </button>
+                                                )}
+                                                <button 
+                                                    className="icon-btn text-danger" 
+                                                    onClick={() => handleDeleteLead(l.id)}
+                                                    title="Delete Lead"
+                                                    style={{ padding: '6px', borderRadius: '6px' }}
+                                                >
+                                                    <X size={16} />
                                                 </button>
-                                            )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
