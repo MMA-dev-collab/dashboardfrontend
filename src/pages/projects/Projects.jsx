@@ -32,6 +32,7 @@ export default function Projects() {
     const [statusFilter, setStatusFilter] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [editProject, setEditProject] = useState(null);
+    const [deleteProject, setDeleteProject] = useState(null);
     const [paymentProject, setPaymentProject] = useState(null);
     const [paymentForm, setPaymentForm] = useState({ amount: '', method: 'BANK_TRANSFER', note: '' });
     const [form, setForm] = useState({
@@ -108,6 +109,17 @@ export default function Projects() {
             fetchProjects();
         } catch (err) {
             alert(err.response?.data?.message || 'Error updating status');
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!deleteProject) return;
+        try {
+            await api.delete(`/projects/${deleteProject.id}`);
+            setDeleteProject(null);
+            fetchProjects();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error deleting project');
         }
     };
 
@@ -249,6 +261,13 @@ export default function Projects() {
                                                             title="Edit Details"
                                                         >
                                                             <Edit2 size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setDeleteProject(p)}
+                                                            className="icon-btn-small danger"
+                                                            title="Delete Project"
+                                                        >
+                                                            <Trash2 size={16} />
                                                         </button>
                                                     </>
                                                 )}
@@ -406,7 +425,7 @@ export default function Projects() {
                                                     ))}
                                                 </select>
 
-                                                <div className="input-wrapper" style={{ width: '120px' }}>
+                                                <div className="input-wrapper" style={{ width: '200px' }}>
                                                     <Percent size={14} className="input-icon" />
                                                     <input
                                                         className="form-input"
@@ -558,6 +577,36 @@ export default function Projects() {
                                 <button type="submit" className="btn btn-primary">Confirm & Distribute</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal for Delete Confirmation */}
+            {deleteProject && (
+                <div className="modal-overlay">
+                    <div className="modal-card fade-in" style={{ maxWidth: '400px' }}>
+                        <div className="modal-header">
+                            <h3 className="card-title text-danger">Delete Project</h3>
+                            <button className="icon-btn" onClick={() => setDeleteProject(null)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p className="mb-4">
+                                Are you sure you want to delete <strong>{deleteProject.name}</strong>?
+                                This action is irreversible and will delete all related tasks, payments, and data.
+                            </p>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={() => setDeleteProject(null)}>Cancel</button>
+                            <button
+                                type="button"
+                                className="btn btn-danger"
+                                onClick={handleDelete}
+                            >
+                                Confirm Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

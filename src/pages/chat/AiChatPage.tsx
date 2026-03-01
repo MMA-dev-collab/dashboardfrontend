@@ -263,8 +263,8 @@ export default function AiChatPage() {
                                     key={thread.id}
                                     onClick={() => switchThread(thread.id)}
                                     className={`w-full text-left px-3 py-2.5 text-sm rounded-lg flex items-center gap-2 cursor-pointer transition-all group ${thread.id === activeThreadId
-                                            ? 'bg-indigo-500/10 text-indigo-600 border border-indigo-500/15'
-                                            : 'hover:bg-muted/60 text-foreground/80'
+                                        ? 'bg-indigo-500/10 text-indigo-600 border border-indigo-500/15'
+                                        : 'hover:bg-muted/60 text-foreground/80'
                                         }`}
                                 >
                                     <MessageSquare size={14} className={`shrink-0 ${thread.id === activeThreadId ? 'text-indigo-500' : 'opacity-40 group-hover:opacity-70'}`} />

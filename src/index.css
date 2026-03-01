@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 :root {
   /* Colors - Modern SaaS Palette (Slate & Cobalt) */
   --primary: #4f46e5;
@@ -201,6 +202,7 @@ ul {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -229,6 +231,23 @@ ul {
   }
 }
 
-.text-primary-foreground{
+.text-primary-foreground {
   background-color: var(--primary);
+}
+
+.bg-background , .bg-background\/50 , .chat-messages {
+  background-color: var(--bg-main) !important;
+}
+
+.bg-muted\/30 , .bg-muted{
+  background-color: var(--bg-card);
+}
+
+
+.text-foreground\/80{
+color: var(--text-primary);
+}
+
+.bg-muted\/10{
+  background-color: var(--bg-card);
 }

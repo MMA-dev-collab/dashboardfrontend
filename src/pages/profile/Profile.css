@@ -85,7 +85,7 @@
 .profile-name {
     font-size: 28px;
     font-weight: 700;
-    color: var(--text, #111827);
+    color: var(--text);
 }
 
 .profile-title {
@@ -142,7 +142,7 @@
 .profile-stat-value {
     font-size: 24px;
     font-weight: 700;
-    color: var(--text, #111827);
+    color: var(--text, #fff);
 }
 
 .profile-stat-label {
@@ -200,7 +200,7 @@
 .profile-task-title {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text, #111827);
+    color: var(--text, #fff);
 }
 
 .profile-task-project {
@@ -240,7 +240,7 @@
 .profile-project-name {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text, #111827);
+    color: var(--text, #fff);
 }
 
 /* Wallet */
@@ -303,7 +303,7 @@
 .profile-notification-title {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text, #111827);
+    color: var(--text, #fff);
 }
 
 .profile-notification-msg {
