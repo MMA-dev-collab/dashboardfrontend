@@ -1,0 +1,44 @@
+.audit-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.badge-outline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.time-stack {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-type-cell code {
+    background: var(--bg-main);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.density-high td {
+    padding: 0.75rem 0 !important;
+}
+
+.text-xxs {
+    font-size: 0.65rem;
+}
+
+.status-badge.emerald {
+    background: #ecfdf5;
+    color: #059669;
+}

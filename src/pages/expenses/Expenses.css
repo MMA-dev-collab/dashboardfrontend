@@ -1,0 +1,42 @@
+.expenses-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.expense-desc-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.expense-icon-box {
+    width: 32px;
+    height: 32px;
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+}
+
+.project-link-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.text-xxs {
+    font-size: 0.65rem;
+}
+
+.status-badge.danger {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
+.status-badge.indigo {
+    background: #eef2ff;
+    color: #4f46e5;
+}

@@ -1,0 +1,81 @@
+.withdrawals-page {
+    display: flex;
+    flex-direction: column;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+}
+
+.text-xxs {
+    font-size: 0.65rem;
+}
+
+.note-cell {
+    display: flex;
+    flex-direction: column;
+    max-width: 250px;
+}
+
+.date-stack {
+    display: flex;
+    flex-direction: column;
+}
+
+.action-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.icon-btn-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.icon-btn-action.approve {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.icon-btn-action.approve:hover {
+    background: var(--success);
+    color: white;
+}
+
+.icon-btn-action.reject {
+    background: #fff1f2;
+    color: var(--danger);
+}
+
+.icon-btn-action.reject:hover {
+    background: var(--danger);
+    color: white;
+}
+
+.empty-state-payout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-wrapper.large .form-input {
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 1rem 1rem 1rem 3rem !important;
+}
+
+.input-wrapper.large .input-icon {
+    left: 1rem;
+}
+
+.form-help-text {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: 0.5rem;
+}

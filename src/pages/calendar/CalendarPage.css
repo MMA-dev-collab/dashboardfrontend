@@ -1,0 +1,411 @@
+/* ─── Calendar Page Styles ─── */
+
+.calendar-page {
+    padding-bottom: 2rem;
+}
+
+/* Legend */
+.cal-legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border-light);
+}
+
+.cal-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.cal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Calendar Wrapper */
+.cal-wrapper {
+    padding: 1rem;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* ─── Custom Toolbar ─── */
+.cal-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.cal-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cal-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cal-nav-btn {
+    background: var(--bg-main) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 8px !important;
+    padding: 0.4rem 0.75rem !important;
+    font-size: 13px !important;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cal-nav-btn:hover {
+    background: var(--bg-card) !important;
+    border-color: var(--primary) !important;
+}
+
+.cal-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0.5rem;
+    color: var(--text-primary);
+}
+
+.cal-view-switcher {
+    display: flex;
+    background: var(--bg-main);
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+}
+
+.cal-view-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cal-view-btn.active {
+    background: var(--primary);
+    color: white;
+}
+
+.cal-view-btn:hover:not(.active) {
+    background: var(--bg-card);
+}
+
+.cal-create-btn {
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    padding: 0.45rem 1rem !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ─── react-big-calendar Theme Override ─── */
+.rbc-calendar {
+    font-family: inherit;
+    color: var(--text-primary);
+}
+
+.rbc-header {
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.rbc-header+.rbc-header {
+    border-left: 1px solid var(--border-light);
+}
+
+.rbc-month-view,
+.rbc-time-view {
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.rbc-day-bg {
+    background: var(--bg-card);
+}
+
+.rbc-day-bg+.rbc-day-bg {
+    border-left: 1px solid var(--border-light);
+}
+
+.rbc-off-range-bg {
+    background: var(--bg-main);
+    opacity: 0.6;
+}
+
+.rbc-today {
+    background: rgba(59, 130, 246, 0.06) !important;
+}
+
+.rbc-month-row+.rbc-month-row {
+    border-top: 1px solid var(--border-light);
+}
+
+.rbc-date-cell {
+    padding: 4px 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.rbc-date-cell.rbc-now {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.rbc-event {
+    border: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-size: 12px !important;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.rbc-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.rbc-event-label {
+    font-size: 11px;
+}
+
+.rbc-show-more {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* Time slot styles */
+.rbc-time-header-content,
+.rbc-time-content {
+    border-left: 1px solid var(--border-light);
+}
+
+.rbc-timeslot-group {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.rbc-time-slot {
+    color: var(--text-tertiary);
+    font-size: 11px;
+}
+
+.rbc-time-gutter {
+    background: var(--bg-main);
+}
+
+.rbc-current-time-indicator {
+    background-color: var(--primary);
+    height: 2px;
+}
+
+/* Agenda styles */
+.rbc-agenda-view table {
+    border: 1px solid var(--border-light);
+}
+
+.rbc-agenda-view table thead th {
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.rbc-agenda-view table tbody td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 13px;
+}
+
+/* ─── Event Detail Card ─── */
+.cal-detail-card {
+    max-width: 480px;
+}
+
+.cal-detail-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.cal-detail-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.cal-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.cal-detail-row svg {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+.cal-detail-section {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.cal-detail-section strong {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.5rem;
+}
+
+/* Attendees */
+.cal-attendees {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cal-attendee-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 4px;
+    background: var(--bg-main);
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.cal-attendee-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.cal-attendee-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Member grid (create modal) */
+.cal-member-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cal-member-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 6px 6px;
+    background: var(--bg-main);
+    border: 2px solid var(--border-light);
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+}
+
+.cal-member-chip:hover {
+    border-color: var(--primary);
+    background: var(--bg-card);
+}
+
+.cal-member-chip.selected {
+    border-color: var(--primary);
+    background: rgba(59, 130, 246, 0.08);
+}
+
+/* Status badges for event types */
+.status-badge.task {
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
+}
+
+.status-badge.event {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+}
+
+.status-badge.project {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+}
+
+.status-badge.meeting {
+    background: rgba(139, 92, 246, 0.12);
+    color: #8b5cf6;
+}
+
+.status-badge.deadline {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+}
+
+.status-badge.milestone {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+/* Modal footer */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cal-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cal-toolbar-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
