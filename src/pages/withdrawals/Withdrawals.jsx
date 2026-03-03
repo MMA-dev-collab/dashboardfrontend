@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
-import { ArrowDownToLine, Check, X, User, DollarSign, FileText, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { ArrowDownToLine, Check, X, User, DollarSign, FileText, Calendar, Clock, AlertCircle, Trash2 } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
 import '../Shared.css';
 import './Withdrawals.css';
 
 export default function Withdrawals() {
-    const { user } = useAuthStore();
+    const { user, hasRole } = useAuthStore();
+    const isAdmin = hasRole('Admin') || hasRole('Finance Approver');
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [amount, setAmount] = useState('');
     const [note, setNote] = useState('');
     const [showForm, setShowForm] = useState(false);
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'FINANCE';
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     useEffect(() => {
         fetchRequests();
@@ -60,6 +61,17 @@ export default function Withdrawals() {
         }
     };
 
+    const handleDelete = async () => {
+        if (!deleteTarget) return;
+        try {
+            await api.delete(`/withdrawals/${deleteTarget.id}`);
+            setDeleteTarget(null);
+            fetchRequests();
+        } catch (err) {
+            alert(err.response?.data?.message || 'Error deleting request');
+        }
+    };
+
     const fmt = (v) => new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -76,6 +88,18 @@ export default function Withdrawals() {
         PENDING: 'warning',
         APPROVED: 'success',
         REJECTED: 'danger'
+    };
+
+    // Check if the current user can approve/reject a specific request
+    // Admin cannot approve/reject their own requests
+    const canProcessRequest = (request) => {
+        return isAdmin && request.userId !== user.id;
+    };
+
+    // Check if the current user can delete a request
+    // Owner can delete their own PENDING or REJECTED requests only (not APPROVED)
+    const canDeleteRequest = (request) => {
+        return request.userId === user.id && request.status !== 'APPROVED';
     };
 
     return (
@@ -109,7 +133,7 @@ export default function Withdrawals() {
                                     <th>Context / Note</th>
                                     <th>Requested</th>
                                     <th>Processed</th>
-                                    {isAdmin && <th className="text-right">Action</th>}
+                                    <th className="text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -118,8 +142,8 @@ export default function Withdrawals() {
                                         {isAdmin && (
                                             <td>
                                                 <div className="partner-cell">
-                                                    <div className="avatar micro">{r.user?.name?.charAt(0)}</div>
-                                                    <span className="font-semibold">{r.user?.name}</span>
+                                                    <div className="avatar micro">{r.user?.firstName?.charAt(0) || '?'}</div>
+                                                    <span className="font-semibold">{r.user?.firstName} {r.user?.lastName}</span>
                                                 </div>
                                             </td>
                                         )}
@@ -132,8 +156,8 @@ export default function Withdrawals() {
                                         <td>
                                             <div className="note-cell">
                                                 <span className="text-sm">{r.note || 'No note provided'}</span>
-                                                {r.status === 'REJECTED' && r.rejectionReason && (
-                                                    <span className="text-xs text-danger italic">Reason: {r.rejectionReason}</span>
+                                                {r.status === 'REJECTED' && r.rejectReason && (
+                                                    <span className="text-xs text-danger italic">Reason: {r.rejectReason}</span>
                                                 )}
                                             </div>
                                         </td>
@@ -144,29 +168,51 @@ export default function Withdrawals() {
                                             </div>
                                         </td>
                                         <td>
-                                            <span className="text-xs text-tertiary">{fmtDate(r.processedAt)}</span>
+                                            <span className="text-xs text-tertiary">
+                                                {r.processedAt ? fmtDate(r.processedAt) : '---'}
+                                            </span>
                                         </td>
-                                        {isAdmin && (
-                                            <td className="text-right">
-                                                {r.status === 'PENDING' ? (
-                                                    <div className="action-btns">
+                                        <td className="text-right">
+                                            <div className="action-btns">
+                                                {/* Approve/Reject: Only shown for admins on OTHER users' PENDING requests */}
+                                                {r.status === 'PENDING' && canProcessRequest(r) && (
+                                                    <>
                                                         <button className="icon-btn-action approve" title="Approve" onClick={() => handleApprove(r.id)}>
                                                             <Check size={16} />
                                                         </button>
                                                         <button className="icon-btn-action reject" title="Reject" onClick={() => handleReject(r.id)}>
                                                             <X size={16} />
                                                         </button>
-                                                    </div>
-                                                ) : (
+                                                    </>
+                                                )}
+
+                                                {/* Self-request note for admins: notify they can't process their own */}
+                                                {r.status === 'PENDING' && isAdmin && r.userId === user.id && (
+                                                    <span className="text-xxs text-tertiary italic">Awaiting other admin</span>
+                                                )}
+
+                                                {/* Delete: Owner can delete PENDING or REJECTED (not APPROVED) */}
+                                                {canDeleteRequest(r) && (
+                                                    <button
+                                                        className="icon-btn-action reject"
+                                                        title="Delete Request"
+                                                        onClick={() => setDeleteTarget(r)}
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
+
+                                                {/* Finalized label for APPROVED */}
+                                                {r.status === 'APPROVED' && (
                                                     <span className="text-xs text-tertiary italic">Finalized</span>
                                                 )}
-                                            </td>
-                                        )}
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))}
                                 {requests.length === 0 && (
                                     <tr>
-                                        <td colSpan={isAdmin ? 7 : 5} className="text-center py-12">
+                                        <td colSpan={isAdmin ? 7 : 6} className="text-center py-12">
                                             <div className="empty-state-payout">
                                                 <AlertCircle size={40} className="text-tertiary mb-3" />
                                                 <p className="text-tertiary">No payout requests found at this time.</p>
@@ -208,7 +254,7 @@ export default function Withdrawals() {
                                             autoFocus
                                         />
                                     </div>
-                                    <p className="form-help-text">Funds will be deducted from your Available Balance once approved.</p>
+                                    <p className="form-help-text">Your request will be submitted for admin approval. Funds will be deducted only after approval by another admin.</p>
                                 </div>
                                 <div className="form-group">
                                     <label className="form-label">Note for Finance Team</label>
@@ -233,6 +279,38 @@ export default function Withdrawals() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteTarget && (
+                <div className="modal-overlay">
+                    <div className="modal-card fade-in" style={{ maxWidth: '420px' }}>
+                        <div className="modal-header">
+                            <h3 className="card-title text-danger">Delete Withdrawal Request</h3>
+                            <button className="icon-btn" onClick={() => setDeleteTarget(null)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p className="mb-4">
+                                Are you sure you want to delete your withdrawal request for <strong>{fmt(deleteTarget.amount)}</strong>?
+                            </p>
+                            <p className="text-sm text-tertiary">
+                                This will not affect your wallet balance since the request was not yet approved.
+                            </p>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" onClick={() => setDeleteTarget(null)}>Cancel</button>
+                            <button
+                                type="button"
+                                className="btn btn-danger"
+                                onClick={handleDelete}
+                            >
+                                Confirm Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bell, CheckSquare, Trash2, MessageSquare, Briefcase, FileText } from 'lucide-react';
+import { Bell, CheckSquare, Trash2, MessageSquare, Briefcase, FileText, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
@@ -87,6 +87,7 @@ export default function NotificationCenter() {
         switch (type) {
             case 'chat': return <MessageSquare size={16} className="text-primary" />;
             case 'task': return <Briefcase size={16} className="text-warning" />;
+            case 'withdrawal': return <DollarSign size={16} className="text-success" />;
             default: return <Bell size={16} className="text-info" />;
         }
     };
