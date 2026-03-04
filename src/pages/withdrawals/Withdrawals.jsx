@@ -14,6 +14,10 @@ export default function Withdrawals() {
     const [note, setNote] = useState('');
     const [showForm, setShowForm] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState(null);
+    const [approveTarget, setApproveTarget] = useState(null);
+    const [receiptFile, setReceiptFile] = useState(null);
+    const [approving, setApproving] = useState(false);
+    const [approveError, setApproveError] = useState('');
 
     useEffect(() => {
         fetchRequests();
@@ -40,13 +44,53 @@ export default function Withdrawals() {
         }
     };
 
-    const handleApprove = async (id) => {
-        if (!confirm('Are you sure you want to approve this withdrawal? This will deduct funds from the partner wallet.')) return;
+    const handleApprove = async (e) => {
+        e.preventDefault();
+        if (!approveTarget || !receiptFile) return;
+
+        setApproving(true);
+        setApproveError('');
+
+        const formData = new FormData();
+        formData.append('receipt', receiptFile);
+
+        // 30-second timeout for receipt verification
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 30000);
+
         try {
-            await api.post(`/withdrawals/${id}/approve`);
+            await api.post(`/withdrawals/${approveTarget.id}/approve`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                signal: controller.signal,
+            });
+            setApproveTarget(null);
+            setReceiptFile(null);
+            setApproveError('');
             fetchRequests();
         } catch (err) {
-            alert(err.response?.data?.message || 'Error approving request');
+            if (err.code === 'ERR_CANCELED' || err.name === 'CanceledError') {
+                setApproveError('Verification timed out — the AI took too long to process your receipt. Please try again.');
+            } else {
+                setApproveError(err.response?.data?.message || 'Error approving request. Please try again.');
+            }
+        } finally {
+            clearTimeout(timeout);
+            setApproving(false);
+        }
+    };
+
+    const handleDownloadReceipt = async (id, fileName) => {
+        try {
+            const response = await api.get(`/withdrawals/${id}/receipt`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', fileName || 'receipt');
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (err) {
+            alert('Error downloading receipt');
         }
     };
 
@@ -177,7 +221,7 @@ export default function Withdrawals() {
                                                 {/* Approve/Reject: Only shown for admins on OTHER users' PENDING requests */}
                                                 {r.status === 'PENDING' && canProcessRequest(r) && (
                                                     <>
-                                                        <button className="icon-btn-action approve" title="Approve" onClick={() => handleApprove(r.id)}>
+                                                        <button className="icon-btn-action approve" title="Approve" onClick={() => setApproveTarget(r)}>
                                                             <Check size={16} />
                                                         </button>
                                                         <button className="icon-btn-action reject" title="Reject" onClick={() => handleReject(r.id)}>
@@ -204,7 +248,17 @@ export default function Withdrawals() {
 
                                                 {/* Finalized label for APPROVED */}
                                                 {r.status === 'APPROVED' && (
-                                                    <span className="text-xs text-tertiary italic">Finalized</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs text-tertiary italic">Finalized</span>
+                                                        <button
+                                                            className="icon-btn-action"
+                                                            style={{ background: '#f1f5f9', color: '#475569' }}
+                                                            title="Download Receipt"
+                                                            onClick={() => handleDownloadReceipt(r.id, r.receiptFileName)}
+                                                        >
+                                                            <ArrowDownToLine size={16} />
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </div>
                                         </td>
@@ -311,6 +365,70 @@ export default function Withdrawals() {
                                 Confirm Delete
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Approve Confirmation Modal */}
+            {approveTarget && (
+                <div className="modal-overlay">
+                    <div className="modal-card fade-in" style={{ maxWidth: '450px' }}>
+                        <div className="modal-header">
+                            <h3 className="card-title text-success">Approve Withdrawal</h3>
+                            <button className="icon-btn" disabled={approving} onClick={() => { setApproveTarget(null); setReceiptFile(null); setApproveError(''); }}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleApprove}>
+                            <div className="modal-body">
+                                {approving ? (
+                                    <div className="loading-spinner" style={{ padding: '2rem 0' }}>
+                                        <div className="spinner" />
+                                        <span>Verifying receipt…</span>
+                                        <p className="text-xs text-tertiary mt-2">This may take up to 30 seconds</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="mb-4">
+                                            You are about to approve a withdrawal of <strong>{fmt(approveTarget.amount)}</strong> for <strong>{approveTarget.user?.firstName} {approveTarget.user?.lastName}</strong>.
+                                        </p>
+                                        <div className="alert-box warning mb-4 text-sm">
+                                            <AlertCircle size={16} className="shrink-0" />
+                                            <span>This action will finalize the transfer and deduct the funds from the user's wallet. You must attach a proof of transfer to proceed.</span>
+                                        </div>
+                                        {approveError && (
+                                            <div className="alert-box danger mb-4 text-sm">
+                                                <AlertCircle size={16} className="shrink-0" />
+                                                <span>{approveError}</span>
+                                            </div>
+                                        )}
+                                        <div className="form-group">
+                                            <label className="form-label">Transfer Receipt / Invoice <span className="text-danger">*</span></label>
+                                            <input
+                                                type="file"
+                                                className="form-input"
+                                                accept=".pdf, image/*"
+                                                required
+                                                onChange={(e) => { setReceiptFile(e.target.files[0]); setApproveError(''); }}
+                                            />
+                                            <p className="form-help-text mt-1">Accepted formats: PDF, JPG, PNG (Max 5MB). Receipt will be verified by AI.</p>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                            {!approving && (
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={() => { setApproveTarget(null); setReceiptFile(null); setApproveError(''); }}>Cancel</button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-success"
+                                        disabled={!receiptFile}
+                                    >
+                                        Confirm & Approve
+                                    </button>
+                                </div>
+                            )}
+                        </form>
                     </div>
                 </div>
             )}
