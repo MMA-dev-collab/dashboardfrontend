@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
     User, Briefcase, Wallet, Bell, Edit, CheckCircle, Clock, AlertCircle,
-    Mail, Calendar, Shield, ListTodo
+    Mail, Calendar, Shield, ListTodo, CreditCard
 } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
@@ -14,7 +14,7 @@ export default function Profile() {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
-    const [editForm, setEditForm] = useState({ firstName: '', lastName: '', jobTitle: '' });
+    const [editForm, setEditForm] = useState({ firstName: '', lastName: '', jobTitle: '', paymentUsername: '' });
 
     const isOwnProfile = currentUser?.id === id;
 
@@ -31,6 +31,7 @@ export default function Profile() {
                 firstName: data.data.firstName || '',
                 lastName: data.data.lastName || '',
                 jobTitle: data.data.jobTitle || '',
+                paymentUsername: data.data.paymentUsername || '',
             });
         } catch (err) {
             console.error('Failed to load profile', err);
@@ -49,7 +50,8 @@ export default function Profile() {
                     firstName: data.data.firstName,
                     lastName: data.data.lastName,
                     profilePicture: data.data.profilePicture,
-                    jobTitle: data.data.jobTitle
+                    jobTitle: data.data.jobTitle,
+                    paymentUsername: data.data.paymentUsername
                 });
             }
         } catch (err) {
@@ -162,6 +164,13 @@ export default function Profile() {
                                     value={editForm.jobTitle}
                                     onChange={e => setEditForm(p => ({ ...p, jobTitle: e.target.value }))}
                                 />
+                                <input
+                                    className="form-input mb-1"
+                                    placeholder="Payment App Username (e.g. InstaPay handle)"
+                                    value={editForm.paymentUsername}
+                                    onChange={e => setEditForm(p => ({ ...p, paymentUsername: e.target.value }))}
+                                />
+                                <p className="form-help-text mb-3" style={{ margin: '0 0 12px 0', fontSize: '11px' }}>Used for receipt verification when processing withdrawals</p>
                                 <div className="flex gap-2">
                                     <button className="btn btn-primary btn-sm" onClick={handleSave}>Save</button>
                                     <button className="btn btn-secondary btn-sm" onClick={() => setEditing(false)}>Cancel</button>
@@ -175,6 +184,9 @@ export default function Profile() {
                                     <span className="profile-meta-item"><Mail size={14} /> {profile.email}</span>
                                     <span className="profile-meta-item"><Calendar size={14} /> Joined {fmtDate(profile.createdAt)}</span>
                                     <span className="profile-meta-item"><Shield size={14} /> {profile.roles?.join(', ') || 'Member'}</span>
+                                    {profile.paymentUsername && (
+                                        <span className="profile-meta-item"><CreditCard size={14} /> {profile.paymentUsername}</span>
+                                    )}
                                 </div>
                             </>
                         )}

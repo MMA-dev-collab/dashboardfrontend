@@ -4,6 +4,7 @@ import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
 import '../Shared.css';
 import './Withdrawals.css';
+import VerificationDetails from '../../components/withdrawals/VerificationDetails';
 
 export default function Withdrawals() {
     const { user, hasRole } = useAuthStore();
@@ -18,6 +19,7 @@ export default function Withdrawals() {
     const [receiptFile, setReceiptFile] = useState(null);
     const [approving, setApproving] = useState(false);
     const [approveError, setApproveError] = useState('');
+    const [verificationData, setVerificationData] = useState(null);
 
     useEffect(() => {
         fetchRequests();
@@ -66,12 +68,14 @@ export default function Withdrawals() {
             setApproveTarget(null);
             setReceiptFile(null);
             setApproveError('');
+            setVerificationData(null);
             fetchRequests();
         } catch (err) {
             if (err.code === 'ERR_CANCELED' || err.name === 'CanceledError') {
                 setApproveError('Verification timed out — the AI took too long to process your receipt. Please try again.');
             } else {
                 setApproveError(err.response?.data?.message || 'Error approving request. Please try again.');
+                setVerificationData(err.response?.data?.verification || null);
             }
         } finally {
             clearTimeout(timeout);
@@ -375,7 +379,7 @@ export default function Withdrawals() {
                     <div className="modal-card fade-in" style={{ maxWidth: '450px' }}>
                         <div className="modal-header">
                             <h3 className="card-title text-success">Approve Withdrawal</h3>
-                            <button className="icon-btn" disabled={approving} onClick={() => { setApproveTarget(null); setReceiptFile(null); setApproveError(''); }}>
+                            <button className="icon-btn" disabled={approving} onClick={() => { setApproveTarget(null); setReceiptFile(null); setApproveError(''); setVerificationData(null); }}>
                                 <X size={20} />
                             </button>
                         </div>
@@ -385,7 +389,30 @@ export default function Withdrawals() {
                                     <div className="loading-spinner" style={{ padding: '2rem 0' }}>
                                         <div className="spinner" />
                                         <span>Verifying receipt…</span>
-                                        <p className="text-xs text-tertiary mt-2">This may take up to 30 seconds</p>
+                                        <p className="text-xs text-tertiary mt-2">Our AI agent is analyzing the transfer details</p>
+                                    </div>
+                                ) : verificationData ? (
+                                    <div className="fade-in">
+                                        <VerificationDetails
+                                            verification={verificationData}
+                                            onAccept={() => {
+                                                if (verificationData.verification_status === 'success') {
+                                                    setApproveTarget(null);
+                                                    setReceiptFile(null);
+                                                    setApproveError('');
+                                                    setVerificationData(null);
+                                                    fetchRequests();
+                                                } else {
+                                                    setVerificationData(null);
+                                                    setApproveError('');
+                                                }
+                                            }}
+                                            onCancel={() => {
+                                                setVerificationData(null);
+                                                setApproveError('');
+                                                setReceiptFile(null);
+                                            }}
+                                        />
                                     </div>
                                 ) : (
                                     <>
@@ -409,16 +436,16 @@ export default function Withdrawals() {
                                                 className="form-input"
                                                 accept=".pdf, image/*"
                                                 required
-                                                onChange={(e) => { setReceiptFile(e.target.files[0]); setApproveError(''); }}
+                                                onChange={(e) => { setReceiptFile(e.target.files[0]); setApproveError(''); setVerificationData(null); }}
                                             />
                                             <p className="form-help-text mt-1">Accepted formats: PDF, JPG, PNG (Max 5MB). Receipt will be verified by AI.</p>
                                         </div>
                                     </>
                                 )}
                             </div>
-                            {!approving && (
+                            {!approving && !verificationData && (
                                 <div className="modal-footer">
-                                    <button type="button" className="btn btn-secondary" onClick={() => { setApproveTarget(null); setReceiptFile(null); setApproveError(''); }}>Cancel</button>
+                                    <button type="button" className="btn btn-secondary" onClick={() => { setApproveTarget(null); setReceiptFile(null); setApproveError(''); setVerificationData(null); }}>Cancel</button>
                                     <button
                                         type="submit"
                                         className="btn btn-success"
