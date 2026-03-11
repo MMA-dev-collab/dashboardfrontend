@@ -7,7 +7,7 @@ import useAuthStore from '../../store/useAuthStore';
 import useBoardStore from '../../store/useBoardStore';
 import { BoardColumn } from './AgileComponents';
 import TaskModal from './TaskModal';
-import AgileMetrics from './AgileMetrics';
+import ProjectSprints from './ProjectSprints';
 import '../Shared.css';
 import './ProjectDetails.css';
 
@@ -182,18 +182,11 @@ export default function ProjectDetails() {
                     <LayoutDashboard size={18} /> Overview
                 </button>
                 <button
-                    className={`btn p-flex p-items-center p-gap-2 p-pb-3 ${activeTab === 'board' ? 'p-text-primary p-border-b' : 'p-text-tertiary'}`}
-                    style={{ borderRadius: 0, borderBottomWidth: activeTab === 'board' ? '2px' : 0, borderBottomColor: 'var(--primary)', background: 'transparent' }}
-                    onClick={() => setActiveTab('board')}
+                    className={`btn p-flex p-items-center p-gap-2 p-pb-3 ${activeTab === 'sprints' ? 'p-text-primary p-border-b' : 'p-text-tertiary'}`}
+                    style={{ borderRadius: 0, borderBottomWidth: activeTab === 'sprints' ? '2px' : 0, borderBottomColor: 'var(--primary)', background: 'transparent' }}
+                    onClick={() => setActiveTab('sprints')}
                 >
-                    <Kanban size={18} /> Agile Board
-                </button>
-                <button
-                    className={`btn p-flex p-items-center p-gap-2 p-pb-3 ${activeTab === 'metrics' ? 'p-text-primary p-border-b' : 'p-text-tertiary'}`}
-                    style={{ borderRadius: 0, borderBottomWidth: activeTab === 'metrics' ? '2px' : 0, borderBottomColor: 'var(--primary)', background: 'transparent' }}
-                    onClick={() => setActiveTab('metrics')}
-                >
-                    <LayoutDashboard size={18} /> Agile Metrics
+                    <Briefcase size={18} /> Sprints Workspace
                 </button>
             </div>
 
@@ -342,36 +335,9 @@ export default function ProjectDetails() {
                 </>
             )}
 
-            {/* --- AGILE BOARD TAB --- */}
-            {activeTab === 'board' && (
-                <div className="fade-in p-flex p-flex-col" style={{ height: 'calc(100vh - 350px)' }}>
-                    {boardStore.loading ? (
-                        <div className="p-text-center p-p-12 p-text-tertiary"><div className="spinner"></div> Loading Agile Board...</div>
-                    ) : (
-                        <>
-                            <div className="p-flex p-justify-end p-mb-4">
-                                <button className="btn btn-primary" onClick={() => setSelectedTask({})}>+ Create Ticket</button>
-                            </div>
-                            <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-                                <div className="p-flex p-gap-4 p-overflow-x-auto" style={{ flex: 1, paddingBottom: '1rem' }}>
-                                    {boardStore.columns.map(col => (
-                                        <BoardColumn
-                                            key={col.id}
-                                            column={col}
-                                            tasks={boardStore.tasks.filter(t => t.columnId === col.id)}
-                                            onTaskClick={(task) => setSelectedTask(task)}
-                                        />
-                                    ))}
-                                </div>
-                            </DndContext>
-                        </>
-                    )}
-                </div>
-            )}
-
-            {/* --- AGILE METRICS TAB --- */}
-            {activeTab === 'metrics' && (
-                <AgileMetrics projectId={project.id} />
+            {/* --- SPRINTS WORKSPACE TAB --- */}
+            {activeTab === 'sprints' && (
+                <ProjectSprints projectId={project.id} />
             )}
 
             {/* Modals */}

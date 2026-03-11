@@ -23,6 +23,9 @@ import AiChatPage from './pages/chat/AiChatPage';
 import Notifications from './pages/notifications/Notifications';
 import Profile from './pages/profile/Profile';
 import CalendarPage from './pages/calendar/CalendarPage';
+import AutomationBuilder from './pages/automations/AutomationBuilder';
+import AnalyticsDashboard from './pages/dashboard/AnalyticsDashboard';
+import SprintDetails from './pages/projects/SprintDetails';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -62,6 +65,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/projects/:id" element={<ProjectDetails />} />
+          <Route path="/projects/:id/sprints/:sprintId" element={<SprintDetails />} />
           <Route path="/finance" element={<Finance />} />
           <Route path="/wallets" element={<Wallets />} />
           <Route path="/withdrawals" element={<Withdrawals />} />
@@ -77,6 +81,8 @@ export default function App() {
           <Route path="/ai-chat" element={<AiChatPage />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/analytics" element={<AnalyticsDashboard />} />
+          <Route path="/automations" element={<AutomationBuilder />} />
           <Route path="/profile/:id" element={<Profile />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />

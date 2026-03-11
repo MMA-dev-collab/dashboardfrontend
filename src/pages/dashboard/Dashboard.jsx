@@ -11,12 +11,14 @@ import {
 } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
+import AnalyticsDashboard from './AnalyticsDashboard';
 import './Dashboard.css';
 
 export default function Dashboard() {
     const { user } = useAuthStore();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('overview');
 
     useEffect(() => {
         const fetchDashboardData = async () => {
@@ -62,123 +64,146 @@ export default function Dashboard() {
                 </div>
             </header>
 
-            <div className="stats-grid">
-                {cards.map((card, i) => (
-                    <div key={i} className="stat-card">
-                        <div className={`card-icon-bg ${card.color}`}>
-                            <card.icon size={24} />
-                        </div>
-                        <div className="card-info">
-                            <span className="card-label">{card.label}</span>
-                            <div className="card-value-row">
-                                <span className="card-value">${Number(card.value).toLocaleString()}</span>
-                                <span className={`card-trend ${card.trend.startsWith('+') ? 'up' : 'down'}`}>
-                                    {card.trend.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                                    {card.trend}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
+            <div className="tabs-container" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border)' }}>
+                <button
+                    className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('overview')}
+                    style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'overview' ? '2px solid var(--primary)' : '2px solid transparent', color: activeTab === 'overview' ? 'var(--text)' : 'var(--text-muted)', fontWeight: activeTab === 'overview' ? '600' : '400', cursor: 'pointer' }}
+                >
+                    Overview
+                </button>
+                <button
+                    className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('analytics')}
+                    style={{ padding: '0.75rem 1rem', background: 'none', border: 'none', borderBottom: activeTab === 'analytics' ? '2px solid var(--primary)' : '2px solid transparent', color: activeTab === 'analytics' ? 'var(--text)' : 'var(--text-muted)', fontWeight: activeTab === 'analytics' ? '600' : '400', cursor: 'pointer' }}
+                >
+                    Smart Analytics
+                </button>
             </div>
 
-            <div className="dashboard-grid-main">
-                <div className="card recent-activity">
-                    <div className="card-header">
-                        <h3 className="card-title">Recent Projects</h3>
-                        <button className="text-btn">View All <ChevronRight size={16} /></button>
+            {activeTab === 'overview' ? (
+                <>
+                    <div className="stats-grid">
+                        {cards.map((card, i) => (
+                            <div key={i} className="stat-card">
+                                <div className={`card-icon-bg ${card.color}`}>
+                                    <card.icon size={24} />
+                                </div>
+                                <div className="card-info">
+                                    <span className="card-label">{card.label}</span>
+                                    <div className="card-value-row">
+                                        <span className="card-value">${Number(card.value).toLocaleString()}</span>
+                                        <span className={`card-trend ${card.trend.startsWith('+') ? 'up' : 'down'}`}>
+                                            {card.trend.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                                            {card.trend}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div className="card-body">
-                        <table className="modern-table">
-                            <thead>
-                                <tr>
-                                    <th>Project Name</th>
-                                    <th>Client</th>
-                                    <th>Status</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {stats?.recentProjects?.map(project => (
-                                    <tr key={project.id}>
-                                        <td>
-                                            <div className="project-name-cell">
-                                                <div className="project-team-stack">
-                                                    {(project.partners || []).slice(0, 3).map((p, idx) => (
-                                                        <div
-                                                            key={p.id}
-                                                            className="team-avatar-mini"
-                                                            style={{
-                                                                zIndex: 3 - idx,
-                                                                marginLeft: idx === 0 ? 0 : '-8px',
-                                                                overflow: 'hidden'
-                                                            }}
-                                                            title={`${p.user?.firstName} ${p.user?.lastName}`}
-                                                        >
-                                                            {p.user?.profilePicture ? (
-                                                                <img src={p.user.profilePicture} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                            ) : (
-                                                                p.user?.firstName?.charAt(0) || '?'
+
+                    <div className="dashboard-grid-main">
+                        <div className="card recent-activity">
+                            <div className="card-header">
+                                <h3 className="card-title">Recent Projects</h3>
+                                <button className="text-btn">View All <ChevronRight size={16} /></button>
+                            </div>
+                            <div className="card-body">
+                                <table className="modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Project Name</th>
+                                            <th>Client</th>
+                                            <th>Status</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {stats?.recentProjects?.map(project => (
+                                            <tr key={project.id}>
+                                                <td>
+                                                    <div className="project-name-cell">
+                                                        <div className="project-team-stack">
+                                                            {(project.partners || []).slice(0, 3).map((p, idx) => (
+                                                                <div
+                                                                    key={p.id}
+                                                                    className="team-avatar-mini"
+                                                                    style={{
+                                                                        zIndex: 3 - idx,
+                                                                        marginLeft: idx === 0 ? 0 : '-8px',
+                                                                        overflow: 'hidden'
+                                                                    }}
+                                                                    title={`${p.user?.firstName} ${p.user?.lastName}`}
+                                                                >
+                                                                    {p.user?.profilePicture ? (
+                                                                        <img src={p.user.profilePicture} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                    ) : (
+                                                                        p.user?.firstName?.charAt(0) || '?'
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                            {project.partners?.length > 3 && (
+                                                                <div className="team-avatar-mini more" style={{ marginLeft: '-8px' }}>
+                                                                    +{project.partners.length - 3}
+                                                                </div>
                                                             )}
                                                         </div>
-                                                    ))}
-                                                    {project.partners?.length > 3 && (
-                                                        <div className="team-avatar-mini more" style={{ marginLeft: '-8px' }}>
-                                                            +{project.partners.length - 3}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <span>{project.name}</span>
-                                            </div>
-                                        </td>
-                                        <td>{project.clientName}</td>
-                                        <td>
-                                            <span className={`status-badge ${project.status.toLowerCase()}`}>
-                                                {project.status}
-                                            </span>
-                                        </td>
-                                        <td>${Number(project.totalValue).toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div className="card company-health">
-                    <div className="card-header">
-                        <h3 className="card-title">Liquidity Overview</h3>
-                    </div>
-                    <div className="card-body">
-                        <div className="liquidity-metric">
-                            <div className="metric-header">
-                                <span>Available Reserve</span>
-                                <span className="bold">${Number(stats?.overview?.companyProfit || 0).toLocaleString()}</span>
-                            </div>
-                            <div className="progress-bar-container">
-                                <div className="progress-bar" style={{ width: '65%' }}></div>
-                            </div>
-                            <div className="metric-footer">
-                                <span>Target: $50,000</span>
-                                <span>65%</span>
+                                                        <span>{project.name}</span>
+                                                    </div>
+                                                </td>
+                                                <td>{project.clientName}</td>
+                                                <td>
+                                                    <span className={`status-badge ${project.status.toLowerCase()}`}>
+                                                        {project.status}
+                                                    </span>
+                                                </td>
+                                                <td>${Number(project.totalValue).toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <div className="mini-stats-list">
-                            <div className="mini-stat-item">
-                                <div className="dot blue"></div>
-                                <span>Partner Earnings</span>
-                                <span className="ml-auto">${Number(stats?.overview?.totalPartnerEarnings || 0).toLocaleString()}</span>
+                        <div className="card company-health">
+                            <div className="card-header">
+                                <h3 className="card-title">Liquidity Overview</h3>
                             </div>
-                            <div className="mini-stat-item">
-                                <div className="dot green"></div>
-                                <span>Total Paid Out</span>
-                                <span className="ml-auto">${Number(stats?.overview?.totalPaidOut || 0).toLocaleString()}</span>
+                            <div className="card-body">
+                                <div className="liquidity-metric">
+                                    <div className="metric-header">
+                                        <span>Available Reserve</span>
+                                        <span className="bold">${Number(stats?.overview?.companyProfit || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div className="progress-bar-container">
+                                        <div className="progress-bar" style={{ width: '65%' }}></div>
+                                    </div>
+                                    <div className="metric-footer">
+                                        <span>Target: $50,000</span>
+                                        <span>65%</span>
+                                    </div>
+                                </div>
+
+                                <div className="mini-stats-list">
+                                    <div className="mini-stat-item">
+                                        <div className="dot blue"></div>
+                                        <span>Partner Earnings</span>
+                                        <span className="ml-auto">${Number(stats?.overview?.totalPartnerEarnings || 0).toLocaleString()}</span>
+                                    </div>
+                                    <div className="mini-stat-item">
+                                        <div className="dot green"></div>
+                                        <span>Total Paid Out</span>
+                                        <span className="ml-auto">${Number(stats?.overview?.totalPaidOut || 0).toLocaleString()}</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </>
+            ) : (
+                <AnalyticsDashboard />
+            )}
         </div>
     );
 }

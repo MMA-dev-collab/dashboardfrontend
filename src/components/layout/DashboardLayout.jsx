@@ -25,7 +25,9 @@ import {
     Shield,
     MessageSquare,
     CalendarDays,
-    Bot
+    Bot,
+    Zap,
+    BarChart2
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import useThemeStore from '../../store/useThemeStore';
@@ -44,17 +46,19 @@ const navItems = [
     { path: '/proposals', label: 'Proposals', icon: FileText },
     { path: '/subscriptions', label: 'Retainers', icon: RefreshCw },
     { path: '/documents', label: 'Documents', icon: FolderOpen },
+    { path: '/analytics', label: 'Smart Analytics', icon: BarChart2, role: 'Admin' },
     { path: '/knowledge', label: 'Knowledge Base', icon: BookOpen },
     { path: '/operations', label: 'Operations', icon: Shield },
     { path: '/chat', label: 'Team Chat', icon: MessageSquare },
     { path: '/ai-chat', label: 'AI Assistant', icon: Bot },
+    { path: '/automations', label: 'Automations', icon: Zap, role: 'Admin' },
     { path: '/calendar', label: 'Calendar', icon: CalendarDays },
     { path: '/notifications', label: 'Notifications', icon: Bell },
-    { path: '/audit', label: 'Audit Log', icon: History, role: 'ADMIN' },
+    { path: '/audit', label: 'Audit Log', icon: History, role: 'Admin' },
 ];
 
 export default function DashboardLayout() {
-    const { user, logout } = useAuthStore();
+    const { user, logout, hasRole } = useAuthStore();
     const { theme, toggleTheme } = useThemeStore();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -67,7 +71,7 @@ export default function DashboardLayout() {
     };
 
     const filteredNavItems = navItems.filter(item =>
-        !item.role || (user && user.role === item.role)
+        !item.role || hasRole(item.role)
     );
 
     return (
