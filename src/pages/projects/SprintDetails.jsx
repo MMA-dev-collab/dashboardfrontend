@@ -96,41 +96,61 @@ export default function SprintDetails() {
                 <ArrowLeft size={16} /> Back to Project Workspace
             </button>
 
-            <div className="card p-mb-6">
-                <div className="card-body p-flex p-items-center p-justify-between p-flex-wrap p-gap-4">
-                    <div>
-                        <h1 className="p-text-2xl p-font-bold m-0 p-mb-2">{sprint.name}</h1>
-                        <p className="p-text-tertiary m-0 p-flex p-items-center p-gap-2">
-                            <Target size={16} /> {sprint.goal || 'No specific goal'}
-                        </p>
+            <div className="card p-bg-white p-rounded-2xl p-shadow-sm p-border-0 p-mb-8">
+                <div className="card-body p-p-8 p-flex p-items-center p-justify-between p-flex-wrap p-gap-6">
+                    <div className="p-flex p-items-center p-gap-6">
+                        <div className="p-w-16 p-h-16 p-bg-primary-light p-text-primary p-rounded-2xl p-flex p-items-center p-justify-center p-shadow-inner">
+                            <Target size={32} />
+                        </div>
+                        <div>
+                            <h1 className="p-text-3xl p-font-black m-0 p-mb-1 p-text-primary">{sprint.name}</h1>
+                            <p className="p-text-sm p-text-tertiary m-0 p-flex p-items-center p-gap-2 p-font-medium">
+                                <span className="p-bg-light p-px-2 p-py-0.5 p-rounded-md">Sprint Goal</span>
+                                {sprint.goal || 'Achieve project excellence'}
+                            </p>
+                        </div>
                     </div>
-                    <div className="p-text-right">
-                        <span className={`p-status-badge ${sprint.status === 'COMPLETED' ? 'p-status-completed' : sprint.status === 'ACTIVE' ? 'p-status-active' : 'p-status-pending'}`}>
+                    <div className="p-text-right p-flex p-flex-col p-items-end p-gap-3">
+                        <span className={`p-status-badge p-px-4 p-py-1.5 p-text-xs p-font-bold ${sprint.status === 'COMPLETED' ? 'p-status-completed' : sprint.status === 'ACTIVE' ? 'p-status-active' : 'p-status-pending'}`}>
                             {sprint.status}
                         </span>
-                        <div className="p-text-sm p-text-tertiary p-mt-2 p-flex p-items-center p-gap-2 p-justify-end">
-                            <Clock size={16} />
-                            {sprint.startDate ? new Date(sprint.startDate).toLocaleDateString() : 'TBD'} - {sprint.endDate ? new Date(sprint.endDate).toLocaleDateString() : 'TBD'}
+                        <div className="p-text-xs p-text-tertiary p-flex p-items-center p-gap-2 p-font-bold p-uppercase p-tracking-wider">
+                            <Clock size={14} className="p-text-primary" />
+                            {sprint.startDate ? new Date(sprint.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'} 
+                            <span className="p-mx-1 opacity-40">—</span>
+                            {sprint.endDate ? new Date(sprint.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Tab Navigation */}
-            <div className="p-flex p-border-b p-mb-6 p-gap-4">
+            <div className="p-flex p-gap-8 p-mb-8 p-border-b p-border-light">
                 <button
-                    className={`btn p-flex p-items-center p-gap-2 p-pb-3 ${activeTab === 'board' ? 'p-text-primary p-border-b' : 'p-text-tertiary'}`}
-                    style={{ borderRadius: 0, borderBottomWidth: activeTab === 'board' ? '2px' : 0, borderBottomColor: 'var(--primary)', background: 'transparent' }}
+                    className={`btn p-flex p-items-center p-gap-3 p-pb-4 p-px-2 p-transition-all ${activeTab === 'board' ? 'p-text-primary p-font-bold' : 'p-text-tertiary p-hover-text-secondary'}`}
+                    style={{ 
+                        borderRadius: 0, 
+                        borderBottom: activeTab === 'board' ? '3px solid var(--primary)' : '3px solid transparent', 
+                        background: 'transparent',
+                        fontSize: '0.9rem',
+                        marginBottom: '-1.5px'
+                    }}
                     onClick={() => setActiveTab('board')}
                 >
-                    <Kanban size={18} /> Sprint Board
+                    <Kanban size={20} /> Sprint Board
                 </button>
                 <button
-                    className={`btn p-flex p-items-center p-gap-2 p-pb-3 ${activeTab === 'overview' ? 'p-text-primary p-border-b' : 'p-text-tertiary'}`}
-                    style={{ borderRadius: 0, borderBottomWidth: activeTab === 'overview' ? '2px' : 0, borderBottomColor: 'var(--primary)', background: 'transparent' }}
+                    className={`btn p-flex p-items-center p-gap-3 p-pb-4 p-px-2 p-transition-all ${activeTab === 'overview' ? 'p-text-primary p-font-bold' : 'p-text-tertiary p-hover-text-secondary'}`}
+                    style={{ 
+                        borderRadius: 0, 
+                        borderBottom: activeTab === 'overview' ? '3px solid var(--primary)' : '3px solid transparent', 
+                        background: 'transparent',
+                        fontSize: '0.9rem',
+                        marginBottom: '-1.5px'
+                    }}
                     onClick={() => setActiveTab('overview')}
                 >
-                    <LayoutDashboard size={18} /> Sprint Metrics
+                    <LayoutDashboard size={20} /> Sprint Metrics
                 </button>
             </div>
 

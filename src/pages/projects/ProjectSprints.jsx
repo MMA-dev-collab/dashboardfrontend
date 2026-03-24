@@ -105,10 +105,13 @@ export default function ProjectSprints({ projectId }) {
 
 
     return (
-        <div className="fade-in">
-            <div className="p-flex p-justify-between p-items-center p-mb-6">
-                <h3 className="m-0 p-text-xl p-font-bold p-text-primary">Sprint Workspace</h3>
-                <button className="btn btn-primary p-flex p-items-center p-gap-2" onClick={() => setShowCreate(!showCreate)}>
+        <div className="fade-in p-p-2">
+            <div className="p-flex p-justify-between p-items-center p-mb-8">
+                <div>
+                    <h3 className="m-0 p-text-2xl p-font-bold p-text-primary">Sprint Workspace</h3>
+                    <p className="p-text-sm p-text-tertiary p-mt-1">Manage development phases, goals, and roadmaps.</p>
+                </div>
+                <button className="btn btn-primary p-flex p-items-center p-gap-2 p-shadow-sm p-px-6" onClick={() => setShowCreate(!showCreate)}>
                     <Plus size={18} /> New Sprint
                 </button>
             </div>
@@ -134,23 +137,33 @@ export default function ProjectSprints({ projectId }) {
                 {sprints.map(s => (
                     <div
                         key={s.id}
-                        className="card p-cursor-pointer p-hover-shadow p-transition-transform hover:p-scale-105"
+                        className="card p-cursor-pointer p-transition-all p-hover-shadow-lg p-hover-scale-[1.02] p-bg-white p-rounded-xl p-overflow-hidden p-border-0 p-shadow-sm"
                         onClick={() => navigate(`/projects/${projectId}/sprints/${s.id}`)}
-                        style={{ borderTop: `4px solid ${s.status === 'ACTIVE' ? 'var(--primary)' : s.status === 'COMPLETED' ? 'var(--success)' : 'var(--text-tertiary)'}` }}
                     >
-                        <div className="card-body p-flex-col p-gap-4">
+                        {/* Status Accent Bar */}
+                        <div style={{ 
+                            height: '6px', 
+                            background: s.status === 'ACTIVE' ? 'linear-gradient(90deg, var(--primary), #6366f1)' : 
+                                       s.status === 'COMPLETED' ? 'linear-gradient(90deg, var(--success), #10b981)' : 
+                                       'var(--border-light)' 
+                        }} />
+                        <div className="card-body p-p-6 p-flex-col p-gap-5">
                             <div className="p-flex p-justify-between p-items-center">
                                 <h3 className="m-0 p-text-lg p-font-bold">{s.name}</h3>
                                 <span className={`p-status-badge ${s.status === 'COMPLETED' ? 'p-status-completed' : s.status === 'ACTIVE' ? 'p-status-active' : 'p-status-pending'}`}>
                                     {s.status}
                                 </span>
                             </div>
-                            <div className="p-text-sm p-text-tertiary p-flex p-items-center p-gap-2">
-                                <Target size={16} /> {s.goal || 'No goal set'}
-                            </div>
-                            <div className="p-text-sm p-text-tertiary p-flex p-items-center p-gap-2">
-                                <Clock size={16} />
-                                {s.startDate ? new Date(s.startDate).toLocaleDateString() : 'TBD'} - {s.endDate ? new Date(s.endDate).toLocaleDateString() : 'TBD'}
+                            <div className="p-flex-col p-gap-3">
+                                <div className="p-text-xs p-text-tertiary p-flex p-items-center p-gap-2 p-font-medium">
+                                    <Target size={14} className="p-text-primary-light" />
+                                    <span className="p-truncate">{s.goal || 'No goal set'}</span>
+                                </div>
+                                <div className="p-text-xs p-text-tertiary p-flex p-items-center p-gap-2 p-font-medium">
+                                    <Clock size={14} className="p-text-primary-light" />
+                                    {s.startDate ? new Date(s.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'TBD'} - 
+                                    {s.endDate ? new Date(s.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'TBD'}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -36,7 +36,8 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
         storyPoints: initialTask?.storyPoints || '',
         columnId: initialTask?.columnId || boardStore.columns[0]?.id || '',
         assigneeId: initialTask?.assigneeId || '',
-        dueDate: initialTask?.dueDate ? initialTask.dueDate.split('T')[0] : ''
+        dueDate: initialTask?.dueDate ? initialTask.dueDate.split('T')[0] : '',
+        sprintId: initialTask?.sprintId || ''
     });
 
     const [submitting, setSubmitting] = useState(false);
@@ -102,6 +103,7 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
             const payload = {
                 ...formData,
                 storyPoints: parseInt(formData.storyPoints) || 0,
+                sprintId: formData.sprintId || null
             };
             if (isNew) {
                 payload.reporterId = user.id;
@@ -283,7 +285,14 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
                                 value={formData.title}
                                 onChange={handleChange}
                                 placeholder="What needs to be done?"
-                                style={{ border: errors.title ? '1px solid var(--danger)' : 'none', padding: '0.5rem 0', background: 'transparent', fontSize: '1.1rem', fontWeight: 600 }}
+                                style={{ 
+                                    border: errors.title ? '1px solid var(--danger)' : '1px solid var(--border-light)', 
+                                    padding: '0.75rem 1rem', 
+                                    fontSize: '1.25rem', 
+                                    fontWeight: 700,
+                                    borderRadius: '8px',
+                                    marginBottom: '0.5rem'
+                                }}
                             />
                             {errors.title && <div className="p-text-danger p-text-xs p-mt-1">{errors.title}</div>}
                         </div>
@@ -296,7 +305,8 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
-                                rows={5}
+                                rows={10}
+                                style={{ minHeight: '200px', lineHeight: '1.6' }}
                                 placeholder="Add detailed criteria here..."
                             />
                             {errors.description && <div className="p-text-danger p-text-xs p-mt-1">{errors.description}</div>}

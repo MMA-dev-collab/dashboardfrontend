@@ -26,45 +26,45 @@ export const TaskCard = memo(({ task, onClick }) => {
         <div
             ref={setNodeRef}
             style={style}
-            className="card p-mb-2 p-p-3"
+            className="card p-mb-3 p-p-4 p-rounded-xl p-shadow-sm p-bg-white p-transition-shadow p-hover-shadow-md"
             onClick={onClick}
         >
-            <div className="p-flex p-justify-between p-items-start p-mb-2">
-                <h4 className="m-0 p-text-sm p-font-semibold" style={{ flex: 1, paddingRight: '0.5rem' }}>{task.title}</h4>
+            <div className="p-flex p-justify-between p-items-start p-mb-3">
+                <h4 className="m-0 p-text-sm p-font-bold p-text-primary" style={{ flex: 1, paddingRight: '0.5rem', lineHeight: '1.4' }}>{task.title}</h4>
                 <div className="p-flex p-items-center p-gap-2">
-                    <span className="p-text-xs p-bg-light p-rounded-lg p-p-1">{task.storyPoints || '-'}</span>
-                    {/* Drag handle — only this element initiates a drag */}
+                    <span className="p-text-xs p-bg-light p-rounded-md p-px-2 p-py-1 p-font-semibold">{task.storyPoints || '-'}</span>
                     <span
                         {...attributes}
                         {...listeners}
                         onClick={e => e.stopPropagation()}
-                        style={{ cursor: 'grab', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', padding: '2px' }}
+                        style={{ cursor: 'grab', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', padding: '4px' }}
                         title="Drag to move"
                     >
-                        <GripVertical size={16} />
+                        <GripVertical size={18} />
                     </span>
                 </div>
             </div>
-            <div className="p-flex p-justify-between p-items-center p-mt-4 p-text-tertiary">
+            
+            <div className="p-flex p-justify-between p-items-center p-mt-4">
                 <div className="p-flex p-items-center p-gap-2">
                     {typeIcons[task.type] || typeIcons.TASK}
                     {task.assignee ? (
                         <div className="p-flex p-items-center p-gap-2">
-                            <div className="p-w-5 p-h-5 p-rounded-full p-bg-secondary p-text-white p-flex p-items-center p-justify-center p-text-xs p-shrink-0" style={{ overflow: 'hidden' }}>
+                            <div className="p-w-6 p-h-6 p-rounded-full p-bg-primary-light p-text-primary p-flex p-items-center p-justify-center p-text-[10px] p-font-bold p-shrink-0" style={{ overflow: 'hidden', border: '1px solid var(--border-light)' }}>
                                 {task.assignee.profilePicture ? (
                                     <img src={task.assignee.profilePicture} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
                                     task.assignee.firstName?.charAt(0) || 'U'
                                 )}
                             </div>
-                            <span className="p-text-xs">{task.assignee.firstName}</span>
+                            <span className="p-text-xs p-text-secondary p-font-medium">{task.assignee.firstName}</span>
                         </div>
                     ) : (
-                        <span className="p-text-xs p-text-tertiary">Unassigned</span>
+                        <span className="p-text-[10px] p-text-tertiary p-uppercase p-font-bold">Unassigned</span>
                     )}
                 </div>
                 {task.comments?.length > 0 && (
-                    <div className="p-flex p-items-center p-gap-1 p-text-xs">
+                    <div className="p-flex p-items-center p-gap-1 p-text-xs p-text-tertiary p-bg-light p-px-2 p-py-1 p-rounded-md">
                         <MessageSquare size={12} /> {task.comments.length}
                     </div>
                 )}
