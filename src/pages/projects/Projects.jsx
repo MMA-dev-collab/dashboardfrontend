@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Briefcase, User, Mail, DollarSign, Percent, FileText, ChevronRight, X, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Search, Filter, Briefcase, User, Mail, DollarSign, Percent, FileText, ChevronRight, X, Trash2, Edit2, Calendar } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
 import '../Shared.css';
@@ -12,12 +12,6 @@ const statusColors = {
     ON_HOLD: 'on-hold',
     COMPLETED: 'completed',
     CANCELLED: 'cancelled',
-};
-
-const paymentColors = {
-    NOT_PAID: 'danger',
-    PARTIALLY_PAID: 'warning',
-    FULLY_PAID: 'success',
 };
 
 export default function Projects() {
@@ -42,19 +36,15 @@ export default function Projects() {
         totalValue: '',
         companyPercentage: 30,
         description: '',
+        deadline: '',
         partners: []
     });
-
-    useEffect(() => {
-        fetchProjects();
-        fetchUsers();
-    }, [search, statusFilter]);
 
     const fetchUsers = async () => {
         try {
             const { data } = await api.get('/users', { params: { limit: 100 } });
             setUsers(data.data || []);
-        } catch (_) { }
+        } catch (_err) { /* ignore */ }
     };
 
     const fetchProjects = async () => {
@@ -64,9 +54,15 @@ export default function Projects() {
             if (statusFilter) params.status = statusFilter;
             const { data } = await api.get('/projects', { params });
             setProjects(data.data || []);
-        } catch (_) { }
+        } catch (_err) { /* ignore */ }
         setLoading(false);
     };
+
+    useEffect(() => {
+        fetchProjects();
+        fetchUsers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search, statusFilter]);
 
     const handleCreate = async (e) => {
         e.preventDefault();
@@ -91,7 +87,7 @@ export default function Projects() {
                 }))
             });
             setShowForm(false);
-            setForm({ name: '', clientName: '', clientEmail: '', totalValue: '', companyPercentage: 30, description: '', partners: [] });
+            setForm({ name: '', clientName: '', clientEmail: '', totalValue: '', companyPercentage: 30, description: '', deadline: '', partners: [] });
             fetchProjects();
         } catch (err) {
             alert(err.response?.data?.message || 'Error creating project');
@@ -389,6 +385,19 @@ export default function Projects() {
                                                 onChange={e => setForm({ ...form, description: e.target.value })}
                                                 rows={3}
                                                 placeholder="Project scope and details..."
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                                        <label className="form-label">Project Deadline</label>
+                                        <div className="input-wrapper">
+                                            <Calendar size={16} className="input-icon" />
+                                            <input
+                                                className="form-input"
+                                                type="date"
+                                                value={form.deadline}
+                                                onChange={e => setForm({ ...form, deadline: e.target.value })}
                                             />
                                         </div>
                                     </div>

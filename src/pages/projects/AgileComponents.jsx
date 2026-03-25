@@ -1,12 +1,13 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Clock, MessageSquare, AlertCircle, CheckCircle, Circle, GripVertical } from 'lucide-react';
+import { Clock, MessageSquare, AlertCircle, CheckCircle, Circle, GripVertical, Tag } from 'lucide-react';
 
 const typeIcons = {
     STORY: <CheckCircle size={14} className="p-text-green" />,
     BUG: <AlertCircle size={14} className="p-text-danger" />,
-    TASK: <Circle size={14} className="p-text-info" />
+    TASK: <Circle size={14} className="p-text-info" />,
+    EPIC: <Tag size={14} className="p-text-warning" />
 };
 
 export const TaskCard = memo(({ task, onClick }) => {
@@ -22,50 +23,75 @@ export const TaskCard = memo(({ task, onClick }) => {
         transition: isDragging ? 'none' : 'box-shadow 0.2s ease, transform 0.1s ease',
     };
 
+    // Map taskTags to tag objects
+    const tags = useMemo(() => (task.taskTags || []).map(tt => tt.tag).filter(Boolean), [task.taskTags]);
+
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className="card p-mb-3 p-p-4 p-rounded-xl p-shadow-sm p-bg-white p-transition-shadow p-hover-shadow-md"
+            className="card p-mb-2 p-p-3 p-rounded-lg p-shadow-sm p-bg-white p-transition-shadow p-hover-shadow-md p-border"
             onClick={onClick}
         >
-            <div className="p-flex p-justify-between p-items-start p-mb-3">
-                <h4 className="m-0 p-text-sm p-font-bold p-text-primary" style={{ flex: 1, paddingRight: '0.5rem', lineHeight: '1.4' }}>{task.title}</h4>
-                <div className="p-flex p-items-center p-gap-2">
-                    <span className="p-text-xs p-bg-light p-rounded-md p-px-2 p-py-1 p-font-semibold">{task.storyPoints || '-'}</span>
+            <div className="p-flex p-justify-between p-items-start p-mb-1">
+                <h4 className="m-0 p-text-xs p-font-bold p-text-text" style={{ flex: 1, paddingRight: '0.5rem', lineHeight: '1.4' }}>{task.title}</h4>
+                <div className="p-flex p-items-center p-gap-1">
+                    <span className="p-text-[10px] p-text-tertiary p-bg-light p-rounded p-px-1.5 p-py-0.5 p-font-bold">{task.storyPoints || '-'}</span>
                     <span
                         {...attributes}
                         {...listeners}
                         onClick={e => e.stopPropagation()}
-                        style={{ cursor: 'grab', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', padding: '4px' }}
+                        style={{ cursor: 'grab', color: 'var(--text-tertiary)', display: 'flex', alignItems: 'center', padding: '2px' }}
                         title="Drag to move"
                     >
-                        <GripVertical size={18} />
+                        <GripVertical size={14} />
                     </span>
                 </div>
             </div>
-            
-            <div className="p-flex p-justify-between p-items-center p-mt-4">
+
+            {/* Tag Chips */}
+            {tags.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', marginBottom: '6px' }}>
+                    {tags.map(tag => (
+                        <span
+                            key={tag.id}
+                            style={{
+                                display: 'inline-block',
+                                background: tag.color + '15',
+                                color: tag.color,
+                                border: `1px solid ${tag.color}33`,
+                                borderRadius: '4px',
+                                padding: '0px 4px',
+                                fontSize: '9px',
+                                fontWeight: 600,
+                            }}
+                        >
+                            {tag.name}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            <div className="p-flex p-justify-between p-items-center p-mt-2">
                 <div className="p-flex p-items-center p-gap-2">
                     {typeIcons[task.type] || typeIcons.TASK}
                     {task.assignee ? (
-                        <div className="p-flex p-items-center p-gap-2">
-                            <div className="p-w-6 p-h-6 p-rounded-full p-bg-primary-light p-text-primary p-flex p-items-center p-justify-center p-text-[10px] p-font-bold p-shrink-0" style={{ overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+                        <div className="p-flex p-items-center p-gap-1">
+                            <div className="p-w-5 p-h-5 p-rounded-full p-bg-primary-light p-text-primary p-flex p-items-center p-justify-center p-text-[9px] p-font-bold p-shrink-0" style={{ overflow: 'hidden' }}>
                                 {task.assignee.profilePicture ? (
                                     <img src={task.assignee.profilePicture} alt="User" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
                                     task.assignee.firstName?.charAt(0) || 'U'
                                 )}
                             </div>
-                            <span className="p-text-xs p-text-secondary p-font-medium">{task.assignee.firstName}</span>
                         </div>
                     ) : (
-                        <span className="p-text-[10px] p-text-tertiary p-uppercase p-font-bold">Unassigned</span>
+                        <div className="p-w-5 p-h-5 p-rounded-full p-bg-light p-border p-border-dashed p-flex p-items-center p-justify-center p-text-[9px] p-text-tertiary p-shrink-0" title="Unassigned">?</div>
                     )}
                 </div>
                 {task.comments?.length > 0 && (
-                    <div className="p-flex p-items-center p-gap-1 p-text-xs p-text-tertiary p-bg-light p-px-2 p-py-1 p-rounded-md">
-                        <MessageSquare size={12} /> {task.comments.length}
+                    <div className="p-flex p-items-center p-gap-1 p-text-[10px] p-text-tertiary">
+                        <MessageSquare size={10} /> {task.comments.length}
                     </div>
                 )}
             </div>
@@ -79,24 +105,29 @@ export const BoardColumn = memo(({ column, tasks, onTaskClick }) => {
         data: { column }
     });
 
+    const sortedTasks = useMemo(() => [...tasks].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)), [tasks]);
+
     return (
         <div
             ref={setNodeRef}
-            className={`board-column p-bg-light p-rounded-lg p-p-3 ${isOver ? 'p-border-primary' : ''}`}
+            className={`board-column p-rounded-xl p-p-2`}
             style={{
-                minWidth: '300px',
-                flex: '0 0 300px',
+                minWidth: '280px',
+                flex: '0 0 280px',
                 height: '100%',
-                border: isOver ? '2px dashed #007bff' : '2px solid transparent',
-                transition: 'all 0.2s ease'
+                backgroundColor: isOver ? 'var(--primary-light, #eef2ff)' : 'var(--bg-card, #f4f5f7)',
+                border: isOver ? '1px dashed var(--primary)' : '1px solid transparent',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'all 0.2s ease',
             }}
         >
-            <div className="p-flex p-justify-between p-items-center p-mb-4">
-                <h3 className="m-0 p-text-sm p-font-bold p-uppercase p-text-tertiary">{column.name}</h3>
-                <span className="p-text-xs p-bg-card p-rounded-lg p-p-1 p-font-semibold">{tasks.length}</span>
+            <div className="p-flex p-justify-between p-items-center p-mb-3 p-px-1">
+                <h3 className="m-0 p-text-xs p-font-bold p-uppercase p-text-tertiary" style={{ letterSpacing: '0.05em' }}>{column.name}</h3>
+                <span className="p-text-[10px] p-bg-white p-border p-rounded-md p-px-1.5 p-font-bold p-text-tertiary">{tasks.length}</span>
             </div>
-            <div className="task-list-container" style={{ minHeight: '150px' }}>
-                {tasks.map(task => (
+            <div className="task-list-container p-overflow-y-auto" style={{ flex: 1, minHeight: '150px' }}>
+                {sortedTasks.map(task => (
                     <TaskCard key={task.id} task={task} onClick={() => onTaskClick(task)} />
                 ))}
             </div>

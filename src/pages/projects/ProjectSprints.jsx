@@ -1,108 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Play, CheckSquare, Target, Clock, TrendingDown, DollarSign } from 'lucide-react';
-import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    BarChart, Bar, Cell
-} from 'recharts';
+import { Plus, Target, Clock, Play, CheckSquare } from 'lucide-react';
 import api from '../../api/client';
 import toast from 'react-hot-toast';
 
 export default function ProjectSprints({ projectId }) {
     const navigate = useNavigate();
     const [sprints, setSprints] = useState([]);
-    const [selectedSprint, setSelectedSprint] = useState(null);
-    const [metrics, setMetrics] = useState(null);
     const [loading, setLoading] = useState(true);
-
     const [showCreate, setShowCreate] = useState(false);
-    const [newSprintName, setNewSprintName] = useState('');
+    const [statusUpdating, setStatusUpdating] = useState(null);
 
-    useEffect(() => {
-        fetchSprints();
+    const [newSprint, setNewSprint] = useState({
+        name: '',
+        goal: '',
+        startDate: '',
+        endDate: ''
+    });
+
+    useEffect(() => { 
+        fetchSprints(); 
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [projectId]);
-
-    useEffect(() => {
-        if (selectedSprint) {
-            fetchSprintMetrics(selectedSprint.id);
-        }
-    }, [selectedSprint]);
 
     const fetchSprints = async () => {
         try {
             const { data } = await api.get(`/projects/${projectId}/sprints`);
             setSprints(data.data);
-            if (data.data.length > 0 && !selectedSprint) {
-                setSelectedSprint(data.data[0]);
-            }
-        } catch (err) {
+        } catch {
             toast.error('Failed to load sprints');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchSprintMetrics = async (sprintId) => {
-        try {
-            const { data } = await api.get(`/projects/${projectId}/sprints/${sprintId}/metrics`);
-            setMetrics(data.data);
-        } catch (err) {
-            toast.error('Failed to load sprint metrics');
-        }
-    };
-
     const handleCreateSprint = async () => {
-        if (!newSprintName) return toast.error('Sprint name required');
+        if (!newSprint.name.trim()) return toast.error('Sprint name is required');
         try {
-            await api.post(`/projects/${projectId}/sprints`, {
-                name: newSprintName,
-                goal: 'Complete planned tasks',
-                startDate: new Date(),
-                endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // +14 days default
-            });
-            toast.success('Sprint Created');
-            setNewSprintName('');
+            const payload = {
+                name: newSprint.name.trim(),
+                goal: newSprint.goal.trim() || 'Complete planned tasks',
+                startDate: newSprint.startDate || new Date().toISOString(),
+                endDate: newSprint.endDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+            };
+            await api.post(`/projects/${projectId}/sprints`, payload);
+            toast.success('Sprint created');
+            setNewSprint({ name: '', goal: '', startDate: '', endDate: '' });
             setShowCreate(false);
             fetchSprints();
         } catch (err) {
-            toast.error('Creation failed');
+            toast.error(err.response?.data?.message || 'Creation failed');
         }
     };
 
-    const updateSprintStatus = async (sprintId, status) => {
+    const updateSprintStatus = async (e, sprintId, action) => {
+        e.stopPropagation();
+        setStatusUpdating(sprintId);
         try {
-            const endpointAction = status === 'ACTIVE' ? 'start' : 'complete';
-            await api.patch(`/projects/${projectId}/sprints/${sprintId}/${endpointAction}`);
-            toast.success(`Sprint ${status}`);
+            await api.patch(`/projects/${projectId}/sprints/${sprintId}/${action}`);
+            toast.success(`Sprint ${action === 'start' ? 'started' : 'completed'}`);
             fetchSprints();
-            if (selectedSprint?.id === sprintId) {
-                setSelectedSprint(prev => ({ ...prev, status }));
-            }
         } catch (err) {
-            toast.error('Status update failed');
+            toast.error(err.response?.data?.message || 'Status update failed');
+        } finally {
+            setStatusUpdating(null);
         }
     };
 
     if (loading) return <div className="p-p-12 p-text-center"><div className="spinner" /></div>;
-
-    // Mock burndown generation based on metrics total tasks, etc.
-    const idealBurnLine = [];
-    const actualBurnLine = [];
-    if (metrics) {
-        const totalPts = metrics.totalStoryPoints || 100;
-        const remaining = totalPts - (metrics.completedStoryPoints || 0);
-        for (let i = 0; i <= 14; i++) {
-            idealBurnLine.push({ day: `Day ${i}`, points: Math.max(0, totalPts - (totalPts / 14) * i) });
-            if (i <= 7) {
-                // Mocking actual burn for passed days
-                let burn = totalPts - ((totalPts - remaining) / 7) * i;
-                actualBurnLine.push({ day: `Day ${i}`, ideal: Math.max(0, totalPts - (totalPts / 14) * i), actual: Math.max(0, burn) });
-            } else {
-                actualBurnLine.push({ day: `Day ${i}`, ideal: Math.max(0, totalPts - (totalPts / 14) * i) });
-            }
-        }
-    }
-
 
     return (
         <div className="fade-in p-p-2">
@@ -116,54 +81,119 @@ export default function ProjectSprints({ projectId }) {
                 </button>
             </div>
 
+            {/* Create Sprint Form */}
             {showCreate && (
                 <div className="card p-mb-6 fade-in">
-                    <div className="card-body p-flex p-items-center p-gap-4">
-                        <input
-                            autoFocus
-                            className="form-control"
-                            style={{ maxWidth: '300px' }}
-                            placeholder="Sprint Name (e.g., Sprint 1, MVP Phase)"
-                            value={newSprintName}
-                            onChange={e => setNewSprintName(e.target.value)}
-                        />
-                        <button className="btn btn-primary" onClick={handleCreateSprint}>Create</button>
-                        <button className="btn btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
+                    <div className="card-body p-flex-col p-gap-4">
+                        <h4 className="m-0 p-font-bold p-text-primary">New Sprint</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div>
+                                <label className="p-text-xs p-font-bold p-text-tertiary" style={{ textTransform: 'uppercase' }}>Sprint Name *</label>
+                                <input
+                                    autoFocus
+                                    className="form-control p-mt-1"
+                                    placeholder="e.g. Sprint 1, MVP Phase"
+                                    value={newSprint.name}
+                                    onChange={e => setNewSprint(s => ({ ...s, name: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label className="p-text-xs p-font-bold p-text-tertiary" style={{ textTransform: 'uppercase' }}>Goal</label>
+                                <input
+                                    className="form-control p-mt-1"
+                                    placeholder="Sprint goal..."
+                                    value={newSprint.goal}
+                                    onChange={e => setNewSprint(s => ({ ...s, goal: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label className="p-text-xs p-font-bold p-text-tertiary" style={{ textTransform: 'uppercase' }}>Start Date</label>
+                                <input
+                                    type="date"
+                                    className="form-control p-mt-1"
+                                    value={newSprint.startDate}
+                                    onChange={e => setNewSprint(s => ({ ...s, startDate: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label className="p-text-xs p-font-bold p-text-tertiary" style={{ textTransform: 'uppercase' }}>End Date</label>
+                                <input
+                                    type="date"
+                                    className="form-control p-mt-1"
+                                    value={newSprint.endDate}
+                                    onChange={e => setNewSprint(s => ({ ...s, endDate: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+                        <div className="p-flex p-gap-3">
+                            <button className="btn btn-primary" onClick={handleCreateSprint}>Create Sprint</button>
+                            <button className="btn btn-secondary" onClick={() => setShowCreate(false)}>Cancel</button>
+                        </div>
                     </div>
                 </div>
             )}
 
+            {/* Sprint Cards */}
             <div className="card-grid p-gap-6">
                 {sprints.map(s => (
                     <div
                         key={s.id}
-                        className="card p-cursor-pointer p-transition-all p-hover-shadow-lg p-hover-scale-[1.02] p-bg-white p-rounded-xl p-overflow-hidden p-border-0 p-shadow-sm"
+                        className="card p-cursor-pointer p-transition-all p-hover-shadow-lg p-bg-white p-rounded-xl p-overflow-hidden p-border-0 p-shadow-sm"
                         onClick={() => navigate(`/projects/${projectId}/sprints/${s.id}`)}
                     >
                         {/* Status Accent Bar */}
-                        <div style={{ 
-                            height: '6px', 
-                            background: s.status === 'ACTIVE' ? 'linear-gradient(90deg, var(--primary), #6366f1)' : 
-                                       s.status === 'COMPLETED' ? 'linear-gradient(90deg, var(--success), #10b981)' : 
-                                       'var(--border-light)' 
+                        <div style={{
+                            height: '6px',
+                            background: s.status === 'ACTIVE' ? 'linear-gradient(90deg, var(--primary), #6366f1)' :
+                                s.status === 'COMPLETED' ? 'linear-gradient(90deg, var(--success), #10b981)' :
+                                    'var(--border-light)'
                         }} />
-                        <div className="card-body p-p-6 p-flex-col p-gap-5">
-                            <div className="p-flex p-justify-between p-items-center">
-                                <h3 className="m-0 p-text-lg p-font-bold">{s.name}</h3>
-                                <span className={`p-status-badge ${s.status === 'COMPLETED' ? 'p-status-completed' : s.status === 'ACTIVE' ? 'p-status-active' : 'p-status-pending'}`}>
+                        <div className="card-body p-p-6 p-flex-col p-gap-4">
+                            <div className="p-flex p-justify-between p-items-start p-gap-2">
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <h3 className="m-0 p-text-lg p-font-bold p-truncate">{s.name}</h3>
+                                    <div className="p-text-xs p-text-tertiary p-flex p-items-center p-gap-2 p-font-medium p-mt-1">
+                                        <Target size={12} className="p-text-primary-light" />
+                                        <span className="p-truncate">{s.goal || 'No goal set'}</span>
+                                    </div>
+                                </div>
+                                <span className={`p-status-badge p-shrink-0 ${s.status === 'COMPLETED' ? 'p-status-completed' : s.status === 'ACTIVE' ? 'p-status-active' : 'p-status-pending'}`}>
                                     {s.status}
                                 </span>
                             </div>
-                            <div className="p-flex-col p-gap-3">
-                                <div className="p-text-xs p-text-tertiary p-flex p-items-center p-gap-2 p-font-medium">
-                                    <Target size={14} className="p-text-primary-light" />
-                                    <span className="p-truncate">{s.goal || 'No goal set'}</span>
-                                </div>
-                                <div className="p-text-xs p-text-tertiary p-flex p-items-center p-gap-2 p-font-medium">
-                                    <Clock size={14} className="p-text-primary-light" />
-                                    {s.startDate ? new Date(s.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'TBD'} - 
-                                    {s.endDate ? new Date(s.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'TBD'}
-                                </div>
+
+                            <div className="p-text-xs p-text-tertiary p-flex p-items-center p-gap-2 p-font-medium">
+                                <Clock size={12} className="p-text-primary-light" />
+                                {s.startDate ? new Date(s.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'TBD'} —{' '}
+                                {s.endDate ? new Date(s.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
+                            </div>
+
+                            <div className="p-text-xs p-text-tertiary">
+                                <strong>{s._count?.tasks || 0}</strong> tasks
+                            </div>
+
+                            {/* Quick Action Buttons */}
+                            <div className="p-flex p-gap-2" onClick={e => e.stopPropagation()}>
+                                {s.status === 'PLANNED' && (
+                                    <button
+                                        className="btn btn-primary p-text-xs p-flex p-items-center p-gap-1"
+                                        style={{ padding: '4px 10px' }}
+                                        disabled={statusUpdating === s.id}
+                                        onClick={e => updateSprintStatus(e, s.id, 'start')}
+                                    >
+                                        <Play size={12} /> {statusUpdating === s.id ? '...' : 'Start'}
+                                    </button>
+                                )}
+                                {s.status === 'ACTIVE' && (
+                                    <button
+                                        className="btn p-text-xs p-flex p-items-center p-gap-1"
+                                        style={{ padding: '4px 10px', background: 'var(--success)', color: 'white' }}
+                                        disabled={statusUpdating === s.id}
+                                        onClick={e => updateSprintStatus(e, s.id, 'complete')}
+                                    >
+                                        <CheckSquare size={12} /> {statusUpdating === s.id ? '...' : 'Complete'}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

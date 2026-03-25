@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Clock, DollarSign, Users, FileText, Download, Briefcase, Calendar, LayoutDashboard, Kanban } from 'lucide-react';
-import { DndContext, closestCorners } from '@dnd-kit/core';
+import { ArrowLeft, Clock, DollarSign, Users, FileText, Download, Briefcase, Calendar, LayoutDashboard } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
 import useBoardStore from '../../store/useBoardStore';
 import { BoardColumn } from './AgileComponents';
 import TaskModal from './TaskModal';
 import ProjectSprints from './ProjectSprints';
+import TeamManagementModal from './TeamManagementModal';
 import '../Shared.css';
 import './ProjectDetails.css';
 
@@ -22,26 +22,27 @@ export default function ProjectDetails() {
 
     const [activeTab, setActiveTab] = useState('overview'); // overview | board | metrics
     const [selectedTask, setSelectedTask] = useState(null); // null means closed, {} means new
+    const [showTeamModal, setShowTeamModal] = useState(false);
     const boardStore = useBoardStore();
     const [searchParams, setSearchParams] = useSearchParams();
+
+    const fetchProject = async () => {
+        try {
+            const { data } = await api.get(`/projects/${id}`);
+            setProject(data.data || null);
+        } catch (e) {
+            console.error(e);
+            alert('Error loading project details');
+            navigate('/projects');
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
         fetchProject();
         boardStore.fetchBoardData(id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
-
-    const handleDragEnd = (event) => {
-        const { active, over } = event;
-        if (!over) return;
-
-        const taskId = active.id;
-        const toColumnId = over.id;
-        const task = boardStore.tasks.find(t => t.id === taskId);
-
-        if (task && task.columnId !== toColumnId) {
-            boardStore.moveTask(id, taskId, toColumnId, task.version);
-        }
-    };
 
     // Deep link: Handle ?taskId=... from URL
     useEffect(() => {
@@ -52,23 +53,13 @@ export default function ProjectDetails() {
                 setActiveTab('board');
                 setSelectedTask(task);
                 // Clear the param after opening to avoid re-opening on tab switch
+
                 const newParams = new URLSearchParams(searchParams);
                 newParams.delete('taskId');
                 setSearchParams(newParams, { replace: true });
             }
         }
     }, [searchParams, boardStore.tasks, setSearchParams]);
-
-    const fetchProject = async () => {
-        try {
-            const { data } = await api.get(`/projects/${id}`);
-            setProject(data.data || null);
-        } catch (err) {
-            alert('Error loading project details');
-            navigate('/projects');
-        }
-        setLoading(false);
-    };
 
     const handleDownload = async (docId, fileName) => {
         try {
@@ -79,7 +70,8 @@ export default function ProjectDetails() {
             a.download = fileName;
             a.click();
             window.URL.revokeObjectURL(url);
-        } catch (err) {
+        } catch (e) {
+            console.error(e);
             alert('Download failed');
         }
     };
@@ -105,7 +97,7 @@ export default function ProjectDetails() {
     if (!project) return null;
 
     // Financial calculations from backend
-    const { totalExpenses = 0, totalPaid = 0, netProfit = 0, companyShare = 0, remainingBalance = 0 } = project.financials || {};
+    const { totalExpenses = 0, totalPaid = 0, companyShare = 0, remainingBalance = 0 } = project.financials || {};
 
     // Deadline Math
     let daysRemainingText = "No Deadline Set";
@@ -229,9 +221,19 @@ export default function ProjectDetails() {
 
                         {/* Team Members */}
                         <div className="card">
-                            <div className="card-header p-border-b p-flex p-items-center p-gap-2">
-                                <Users size={18} className="p-text-primary" />
-                                <h3 className="card-title m-0">Project Team & Split</h3>
+                            <div className="card-header p-border-b p-flex p-items-center p-justify-between">
+                                <div className="p-flex p-items-center p-gap-2">
+                                    <Users size={18} className="p-text-primary" />
+                                    <h3 className="card-title m-0">Project Team & Split</h3>
+                                </div>
+                                {isAdmin && (
+                                    <button 
+                                        className="btn btn-secondary p-p-2 p-text-xs"
+                                        onClick={() => setShowTeamModal(true)}
+                                    >
+                                        Manage Team
+                                    </button>
+                                )}
                             </div>
                             <div className="card-body overflow-y-auto" style={{ maxHeight: '300px' }}>
                                 {project.partners?.length === 0 ? (
@@ -347,6 +349,17 @@ export default function ProjectDetails() {
                     projectId={project.id}
                     members={project.partners}
                     onClose={() => setSelectedTask(null)}
+                />
+            )}
+
+            {showTeamModal && (
+                <TeamManagementModal 
+                    project={project} 
+                    onClose={() => setShowTeamModal(false)} 
+                    onUpdate={() => {
+                        setShowTeamModal(false);
+                        fetchProject();
+                    }}
                 />
             )}
         </div>

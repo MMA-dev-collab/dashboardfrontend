@@ -1,12 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import useAuthStore from './store/useAuthStore';
 import useThemeStore from './store/useThemeStore';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/dashboard/Dashboard';
 import Projects from './pages/projects/Projects';
-import ProjectDetails from './pages/projects/ProjectDetails';
 import Finance from './pages/finance/Finance';
 import Wallets from './pages/wallets/Wallets';
 import Withdrawals from './pages/withdrawals/Withdrawals';
@@ -25,8 +24,18 @@ import Profile from './pages/profile/Profile';
 import CalendarPage from './pages/calendar/CalendarPage';
 import AutomationBuilder from './pages/automations/AutomationBuilder';
 import AnalyticsDashboard from './pages/dashboard/AnalyticsDashboard';
-import SprintDetails from './pages/projects/SprintDetails';
 import ActiveWork from './pages/devtracker/ActiveWork';
+
+// Lazy-load heavy pages
+const ProjectDetails = lazy(() => import('./pages/projects/ProjectDetails'));
+const SprintDetails = lazy(() => import('./pages/projects/SprintDetails'));
+
+const PageLoader = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '0.75rem', color: 'var(--text-tertiary)' }}>
+    <div className="spinner" /> Loading...
+  </div>
+);
+
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -65,8 +74,8 @@ export default function App() {
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id" element={<ProjectDetails />} />
-          <Route path="/projects/:id/sprints/:sprintId" element={<SprintDetails />} />
+          <Route path="/projects/:id" element={<Suspense fallback={<PageLoader />}><ProjectDetails /></Suspense>} />
+          <Route path="/projects/:id/sprints/:sprintId" element={<Suspense fallback={<PageLoader />}><SprintDetails /></Suspense>} />
           <Route path="/finance" element={<Finance />} />
           <Route path="/wallets" element={<Wallets />} />
           <Route path="/withdrawals" element={<Withdrawals />} />
