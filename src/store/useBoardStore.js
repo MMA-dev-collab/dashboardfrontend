@@ -46,8 +46,7 @@ const useBoardStore = create((set, get) => ({
         },
         loading: false 
       });
-    } catch (error) {
-      console.error('Failed to load board data', error);
+    } catch {
       set({ loading: false });
     }
   },

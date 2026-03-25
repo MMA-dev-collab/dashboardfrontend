@@ -14,6 +14,7 @@ export default function ProjectSprints({ projectId }) {
     const [newSprint, setNewSprint] = useState({
         name: '',
         goal: '',
+        totalPoints: '',
         startDate: '',
         endDate: ''
     });
@@ -40,12 +41,13 @@ export default function ProjectSprints({ projectId }) {
             const payload = {
                 name: newSprint.name.trim(),
                 goal: newSprint.goal.trim() || 'Complete planned tasks',
+                totalPoints: newSprint.totalPoints ? Number(newSprint.totalPoints) : 0,
                 startDate: newSprint.startDate || new Date().toISOString(),
                 endDate: newSprint.endDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
             };
             await api.post(`/projects/${projectId}/sprints`, payload);
             toast.success('Sprint created');
-            setNewSprint({ name: '', goal: '', startDate: '', endDate: '' });
+            setNewSprint({ name: '', goal: '', totalPoints: '', startDate: '', endDate: '' });
             setShowCreate(false);
             fetchSprints();
         } catch (err) {
@@ -122,6 +124,25 @@ export default function ProjectSprints({ projectId }) {
                                     className="form-control p-mt-1"
                                     value={newSprint.endDate}
                                     onChange={e => setNewSprint(s => ({ ...s, endDate: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label className="p-text-xs p-font-bold p-text-tertiary" style={{ textTransform: 'uppercase' }}>Total Points</label>
+                                <input
+                                    type="number"
+                                    className="form-control p-mt-1"
+                                    placeholder="e.g. 50"
+                                    value={newSprint.totalPoints}
+                                    onChange={e => setNewSprint(s => ({ ...s, totalPoints: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label className="p-text-xs p-font-bold p-text-tertiary" style={{ textTransform: 'uppercase' }}>Initial Tasks</label>
+                                <input
+                                    className="form-control p-mt-1"
+                                    value="0 tasks initially"
+                                    disabled
+                                    style={{ opacity: 0.6 }}
                                 />
                             </div>
                         </div>

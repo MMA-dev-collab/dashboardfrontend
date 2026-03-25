@@ -67,7 +67,7 @@ export default function InternalChat() {
 
         const eventSource = new EventSource(sseUrl);
 
-        eventSource.onopen = () => console.log('⚡ Chat SSE stream connected');
+        // eventSource.onopen = () => console.log('⚡ Chat SSE stream connected');
 
         eventSource.onmessage = (event) => {
             try {
@@ -87,8 +87,8 @@ export default function InternalChat() {
                     }
                     return prev;
                 });
-            } catch (err) {
-                console.error('Error parsing SSE message', err);
+            } catch {
+                // ignore parsing error
             }
         };
 

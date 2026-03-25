@@ -40,9 +40,20 @@ export default function ProjectDetails() {
 
     useEffect(() => {
         fetchProject();
-        boardStore.fetchBoardData(id);
+        // Progressively load board data: only on deep link immediately
+        if (searchParams.has('taskId')) {
+            boardStore.fetchBoardData(id);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
+
+    // Fetch board data when switching to sprints tab if not already loaded
+    useEffect(() => {
+        if (activeTab === 'sprints' && boardStore.tasks.length === 0 && !boardStore.loading) {
+            boardStore.fetchBoardData(id);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab, id]);
 
     // Deep link: Handle ?taskId=... from URL
     useEffect(() => {

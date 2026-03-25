@@ -44,7 +44,7 @@ export default function Projects() {
         try {
             const { data } = await api.get('/users', { params: { limit: 100 } });
             setUsers(data.data || []);
-        } catch (_err) { /* ignore */ }
+        } catch { /* ignore */ }
     };
 
     const fetchProjects = async () => {
@@ -54,13 +54,21 @@ export default function Projects() {
             if (statusFilter) params.status = statusFilter;
             const { data } = await api.get('/projects', { params });
             setProjects(data.data || []);
-        } catch (_err) { /* ignore */ }
+        } catch { /* ignore */ }
         setLoading(false);
     };
 
+    // Fetch users only once or when needed (lazy load)
     useEffect(() => {
-        fetchProjects();
         fetchUsers();
+    }, []);
+
+    // Debounced search for projects
+    useEffect(() => {
+        const delaySearch = setTimeout(() => {
+            fetchProjects();
+        }, 500);
+        return () => clearTimeout(delaySearch);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search, statusFilter]);
 
@@ -150,7 +158,10 @@ export default function Projects() {
                 </div>
                 <div className="header-actions">
                     {isAdmin && (
-                        <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+                        <button className="btn btn-primary" onClick={() => {
+                            if (users.length === 0) fetchUsers();
+                            setShowForm(true);
+                        }}>
                             <Plus size={18} /> New Project
                         </button>
                     )}

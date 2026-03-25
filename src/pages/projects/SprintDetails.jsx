@@ -25,6 +25,11 @@ export default function SprintDetails() {
     const [dateForm, setDateForm] = useState({ startDate: '', endDate: '' });
     const [dateSaving, setDateSaving] = useState(false);
 
+    // Points editing state
+    const [editingPoints, setEditingPoints] = useState(false);
+    const [pointsForm, setPointsForm] = useState({ totalPoints: 0 });
+    const [pointsSaving, setPointsSaving] = useState(false);
+
     // Sprint team state
     const [showTeam, setShowTeam] = useState(false);
     const [project, setProject] = useState(null);
@@ -57,6 +62,7 @@ export default function SprintDetails() {
                 startDate: currentSprint.startDate ? currentSprint.startDate.split('T')[0] : '',
                 endDate: currentSprint.endDate ? currentSprint.endDate.split('T')[0] : ''
             });
+            setPointsForm({ totalPoints: currentSprint.totalPoints || 0 });
 
             const metricsRes = await api.get(`/projects/${projectId}/sprints/${sprintId}/metrics`);
             setMetrics(metricsRes.data.data);
@@ -96,6 +102,20 @@ export default function SprintDetails() {
         }
     };
 
+    const handleSavePoints = async () => {
+        setPointsSaving(true);
+        try {
+            await api.patch(`/projects/${projectId}/sprints/${sprintId}`, { totalPoints: Number(pointsForm.totalPoints) });
+            toast.success('Sprint points updated');
+            setEditingPoints(false);
+            await fetchSprintData();
+        } catch {
+            toast.error('Failed to update points');
+        } finally {
+            setPointsSaving(false);
+        }
+    };
+
     const handleSaveTeam = async () => {
         setTeamSaving(true);
         try {
@@ -132,15 +152,25 @@ export default function SprintDetails() {
     if (loading || boardStore.loading) return <div className="p-p-12 p-text-center"><div className="spinner" /></div>;
     if (!sprint) return null;
 
-    const progressPct = metrics && metrics.totalStoryPoints 
-        ? Math.round((metrics.completedStoryPoints / metrics.totalStoryPoints) * 100) 
-        : (metrics ? Math.round(metrics.completionRate || 0) : 0);
+    // Real-time calculations derived from board store
+    const doneColumn = boardStore.columns.find(c => c.name.toUpperCase() === 'DONE' || c.name.toUpperCase() === 'COMPLETED');
+    const rtTotalTasks = sprintTasks.length;
+    const rtCompletedTasks = doneColumn ? sprintTasks.filter(t => t.columnId === doneColumn.id).length : 0;
+    
+    // Derived points from tasks, fallback to sprint.totalPoints if set > 0
+    const derivedTotalStoryPoints = sprintTasks.reduce((acc, t) => acc + (t.storyPoints || 0), 0);
+    const rtCompletedPoints = doneColumn ? sprintTasks.filter(t => t.columnId === doneColumn.id).reduce((acc, t) => acc + (t.storyPoints || 0), 0) : 0;
+    const rtTotalPoints = sprint.totalPoints > 0 ? sprint.totalPoints : derivedTotalStoryPoints;
+
+    const progressPct = rtTotalPoints > 0 
+        ? Math.round((rtCompletedPoints / rtTotalPoints) * 100) 
+        : (rtTotalTasks > 0 ? Math.round((rtCompletedTasks / rtTotalTasks) * 100) : 0);
 
     // Burndown data
     const burndownData = [];
     if (metrics) {
-        const totalPts = metrics.totalStoryPoints || 100;
-        const remaining = totalPts - (metrics.completedStoryPoints || 0);
+        const totalPts = rtTotalPoints || 100;
+        const remaining = totalPts - rtCompletedPoints;
         for (let i = 0; i <= 14; i++) {
             const ideal = Math.max(0, totalPts - (totalPts / 14) * i);
             if (i <= 7) {
@@ -191,8 +221,8 @@ export default function SprintDetails() {
                                     <div className="progress-bar-fill p-bg-primary" style={{ width: `${progressPct}%`, height: '100%', transition: 'width 0.5s ease' }} />
                                 </div>
                                 <div className="p-flex p-justify-between p-mt-2 p-text-xs p-text-tertiary">
-                                    <span>{metrics?.completedStoryPoints || 0} pts done</span>
-                                    <span>{metrics?.totalStoryPoints || 0} pts total</span>
+                                    <span>{rtCompletedPoints} pts done</span>
+                                    <span>{rtTotalPoints} pts total</span>
                                 </div>
                             </div>
 
@@ -252,6 +282,27 @@ export default function SprintDetails() {
                                     <span className="p-mx-1 opacity-40">—</span>
                                     {sprint.endDate ? new Date(sprint.endDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'}
                                     <button className="btn p-p-1" style={{ fontSize: '10px' }} onClick={() => setEditingDates(true)}>
+                                        <Edit2 size={12} />
+                                    </button>
+                                </>
+                            )}
+                        </div>
+
+                        {/* Total Points — Editable */}
+                        <div className="p-text-xs p-text-tertiary p-flex p-items-center p-gap-2 p-font-bold p-uppercase p-tracking-wider p-mt-2">
+                            <Target size={14} className="p-text-primary" />
+                            {editingPoints ? (
+                                <>
+                                    <input type="number" value={pointsForm.totalPoints} onChange={e => setPointsForm(f => ({ ...f, totalPoints: e.target.value }))}
+                                        style={{ border: '1px solid var(--border)', borderRadius: '6px', padding: '2px 6px', fontSize: '11px', width: '60px' }} />
+                                    <span>pts</span>
+                                    <button className="btn p-p-1 p-text-success" onClick={handleSavePoints} disabled={pointsSaving}><Check size={14} /></button>
+                                    <button className="btn p-p-1" onClick={() => setEditingPoints(false)}><X size={14} /></button>
+                                </>
+                            ) : (
+                                <>
+                                    {sprint.totalPoints ? `${sprint.totalPoints} PTS` : 'AUTO PTS'}
+                                    <button className="btn p-p-1" style={{ fontSize: '10px' }} onClick={() => setEditingPoints(true)}>
                                         <Edit2 size={12} />
                                     </button>
                                 </>
@@ -356,7 +407,7 @@ export default function SprintDetails() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                             <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sprint Progress</span>
                             <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--primary)' }}>
-                                {metrics?.completedTasks || 0}/{metrics?.totalTasks || 0} tasks · {progressPct}%
+                                {rtCompletedTasks}/{rtTotalTasks} tasks · {progressPct}%
                             </span>
                         </div>
                         <div style={{ height: '8px', borderRadius: '99px', background: 'var(--border-light)', overflow: 'hidden' }}>
@@ -396,7 +447,7 @@ export default function SprintDetails() {
                                 <div className="p-avatar p-bg-light p-text-primary"><Target size={24} /></div>
                                 <div>
                                     <div className="p-text-sm p-text-tertiary">Tasks Completed</div>
-                                    <div className="p-text-2xl p-font-bold">{metrics?.completedTasks || 0} / {metrics?.totalTasks || 0}</div>
+                                    <div className="p-text-2xl p-font-bold">{rtCompletedTasks} / {rtTotalTasks}</div>
                                 </div>
                             </div>
                         </div>
@@ -405,7 +456,7 @@ export default function SprintDetails() {
                                 <div className="p-avatar p-bg-light p-text-warning"><Clock size={24} /></div>
                                 <div>
                                     <div className="p-text-sm p-text-tertiary">Completed Story Points</div>
-                                    <div className="p-text-2xl p-font-bold">{metrics?.completedStoryPoints || 0} <span className="p-text-sm p-text-tertiary">/ {metrics?.totalStoryPoints || 0}</span></div>
+                                    <div className="p-text-2xl p-font-bold">{rtCompletedPoints} <span className="p-text-sm p-text-tertiary">/ {rtTotalPoints}</span></div>
                                 </div>
                             </div>
                         </div>
