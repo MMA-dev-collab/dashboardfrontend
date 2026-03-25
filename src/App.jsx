@@ -26,6 +26,7 @@ import CalendarPage from './pages/calendar/CalendarPage';
 import AutomationBuilder from './pages/automations/AutomationBuilder';
 import AnalyticsDashboard from './pages/dashboard/AnalyticsDashboard';
 import SprintDetails from './pages/projects/SprintDetails';
+import ActiveWork from './pages/devtracker/ActiveWork';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuthStore();
@@ -83,6 +84,7 @@ export default function App() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/analytics" element={<AnalyticsDashboard />} />
           <Route path="/automations" element={<AutomationBuilder />} />
+          <Route path="/active-work" element={<ActiveWork />} />
           <Route path="/profile/:id" element={<Profile />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
