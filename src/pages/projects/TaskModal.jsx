@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { X, Save, MessageSquare, Paperclip, Plus, CheckCircle, Circle, AlertCircle, Download, Loader, Trash2, Clock, Tag } from 'lucide-react';
+import { X, Save, MessageSquare, Paperclip, Plus, CheckCircle, Circle, AlertCircle, Download, Loader, Trash2, Clock, Tag, User, Calendar, Zap, Layers, Activity, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import useBoardStore from '../../store/useBoardStore';
 import useAuthStore from '../../store/useAuthStore';
@@ -67,19 +67,39 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
         if (isNew) return;
         try {
             const { data } = await api.get(`/projects/${projectId}/tasks/${initialTask.id}`);
-            setLocalTask(data.data);
+            const fullTask = data.data;
+            setLocalTask(fullTask);
+            
+            // Sync formData with the full loaded task to ensure accurate metadata
+            setFormData({
+                title: fullTask.title || '',
+                description: fullTask.description || '',
+                type: fullTask.type || 'TASK',
+                priority: fullTask.priority || 'MEDIUM',
+                storyPoints: fullTask.storyPoints ?? '',
+                estimatedTime: fullTask.estimatedTime ?? '',
+                columnId: fullTask.columnId || '',
+                assigneeId: fullTask.assigneeId || '',
+                dueDate: fullTask.dueDate ? fullTask.dueDate.split('T')[0] : '',
+                sprintId: fullTask.sprintId || ''
+            });
+
         } catch (err) {
             console.error('Failed to refresh task', err);
         }
     }, [isNew, projectId, initialTask?.id]);
 
     useEffect(() => {
-        if (!isNew) {
-            setLoadingTask(true);
+        if (!isNew && initialTask?.id) {
+            // ONLY reset if switching to a DIFFERENT task or if localTask is missing critical fields
+            if (localTask?.id !== initialTask.id || !localTask.subTasks) {
+                setLocalTask(initialTask);
+                setLoadingTask(true);
+            }
             refreshTask().finally(() => setLoadingTask(false));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isNew, initialTask?.id]);
 
     const handleChange = useCallback((e) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -549,39 +569,57 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
                     </div>
 
                     {/* RIGHT SIDEBAR - Details/Metadata Controls */}
-                    <div className="p-flex-col p-gap-6 custom-scrollbar" style={{ flex: '0 0 340px', padding: '1.5rem', overflowY: 'auto', backgroundColor: 'var(--bg-main)' }}>
-                        <div className="p-rounded-lg p-p-4 p-border p-shadow-sm" style={{ backgroundColor: 'var(--bg-card)' }}>
-                            <label className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase p-mb-2 p-block" style={{ letterSpacing: '0.05em' }}>Status</label>
-                            <select 
-                                className={`form-input p-font-bold p-text-sm ${errors.columnId ? 'is-invalid' : ''}`} 
-                                style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text)', cursor: 'pointer', border: '1px solid var(--border)', borderRadius: '6px' }} 
-                                name="columnId" value={formData.columnId} onChange={handleChange}
-                            >
-                                <option value="" disabled>Select Status...</option>
-                                {boardStore.columns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                            </select>
+                    <div className="p-flex-col custom-scrollbar" style={{ flex: '0 0 340px', padding: '1.5rem', overflowY: 'auto', backgroundColor: 'var(--bg-main)', borderLeft: '1px solid var(--border-light)' }}>
+                        
+                        {/* Status Box */}
+                        <div className="sidebar-box">
+                            <label className="sidebar-box-label">Status</label>
+                            <div className="p-relative">
+                                <select 
+                                    className="p-w-full p-font-bold p-text-xs p-py-2 p-px-3 p-rounded-md p-appearance-none hover:p-bg-light p-transition-colors" 
+                                    style={{ 
+                                        backgroundColor: 'var(--bg-main)', 
+                                        color: 'var(--text)', 
+                                        cursor: 'pointer', 
+                                        border: '1px solid var(--border)',
+                                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                                    }} 
+                                    name="columnId" value={formData.columnId} onChange={handleChange}
+                                >
+                                    <option value="" disabled>Select Status...</option>
+                                    {boardStore.columns.map(c => <option key={c.id} value={c.id}>{c.name.toUpperCase()}</option>)}
+                                </select>
+                                <div className="p-absolute p-right-3 p-top-1/2 p-transform -p-translate-y-1/2 p-pointer-events-none p-text-tertiary">
+                                    <ChevronDown size={14} />
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Details Card */}
-                        <div className="p-rounded-lg p-border p-shadow-sm p-flex-col" style={{ backgroundColor: 'var(--bg-card)', overflow: 'hidden' }}>
-                            <div className="p-px-5 p-py-3 p-border-b" style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}>
-                                <h4 className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase" style={{ letterSpacing: '0.05em', margin: 0 }}>Details</h4>
-                            </div>
-                            <div className="p-flex-col" style={{ padding: '8px 0' }}>
+                        {/* Details Box */}
+                        <div className="sidebar-box">
+                            <label className="sidebar-box-label">Details</label>
+                            <div className="p-flex-col p-gap-2">
                                 {/* Assignee */}
-                                <div className="p-flex p-items-center p-px-5 p-py-1.5 hover:p-bg-light p-transition-colors">
-                                    <span className="p-text-xs p-font-semibold p-text-tertiary p-w-24 p-shrink-0">Assignee</span>
-                                    <select className="form-input p-text-sm p-p-1 p-flex-1" style={{ border: '1px solid transparent', backgroundColor: 'transparent', color: 'var(--text)', cursor: 'pointer', borderRadius: '4px' }} name="assigneeId" value={formData.assigneeId} onChange={handleChange}>
+                                <div className="p-flex p-items-center p-gap-2 p-py-1.5 p-px-1 hover:p-bg-light p-rounded-md p-transition-all">
+                                    <div className="p-w-8 p-flex p-items-center p-justify-center p-text-tertiary">
+                                        <User size={14} />
+                                    </div>
+                                    <span className="p-text-[11px] p-font-semibold p-text-secondary p-w-24 p-shrink-0">Assignee</span>
+                                    <select className="sidebar-control p-font-bold p-flex-1" name="assigneeId" value={formData.assigneeId} onChange={handleChange}>
                                         <option value="">Unassigned</option>
                                         {members.map(m => <option key={m.userId} value={m.userId}>{m.user?.firstName} {m.user?.lastName}</option>)}
                                     </select>
                                 </div>
+
                                 {/* Priority */}
-                                <div className="p-flex p-items-center p-px-5 p-py-1.5 hover:p-bg-light p-transition-colors">
-                                    <span className="p-text-xs p-font-semibold p-text-tertiary p-w-24 p-shrink-0">Priority</span>
-                                    <div className="p-flex-1 p-relative p-flex p-items-center">
-                                        {formData.priority && <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: priorityColors[formData.priority], marginRight: '8px', marginTop: '1px' }} />}
-                                        <select className="form-input p-text-sm p-p-1 p-flex-1" style={{ border: '1px solid transparent', backgroundColor: 'transparent', color: 'var(--text)', cursor: 'pointer', borderRadius: '4px' }} name="priority" value={formData.priority} onChange={handleChange}>
+                                <div className="p-flex p-items-center p-gap-2 p-py-1.5 p-px-1 hover:p-bg-light p-rounded-md p-transition-all">
+                                    <div className="p-w-8 p-flex p-items-center p-justify-center p-text-tertiary">
+                                        <Zap size={14} />
+                                    </div>
+                                    <span className="p-text-[11px] p-font-semibold p-text-secondary p-w-24 p-shrink-0">Priority</span>
+                                    <div className="p-flex-grow p-flex p-items-center p-gap-2">
+                                        {formData.priority && <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: priorityColors[formData.priority], flexShrink: 0 }} />}
+                                        <select className="sidebar-control p-font-bold p-flex-1" name="priority" value={formData.priority} onChange={handleChange}>
                                             <option value="">None</option>
                                             <option value="LOW">Low</option>
                                             <option value="MEDIUM">Medium</option>
@@ -590,106 +628,130 @@ export default function TaskModal({ task: initialTask, projectId, members = [], 
                                         </select>
                                     </div>
                                 </div>
+
                                 {/* Issue Type */}
-                                <div className="p-flex p-items-center p-px-5 p-py-1.5 hover:p-bg-light p-transition-colors">
-                                    <span className="p-text-xs p-font-semibold p-text-tertiary p-w-24 p-shrink-0">Type</span>
-                                    <select className="form-input p-text-sm p-p-1 p-flex-1" style={{ border: '1px solid transparent', backgroundColor: 'transparent', color: 'var(--text)', cursor: 'pointer', borderRadius: '4px' }} name="type" value={formData.type} onChange={handleChange}>
+                                <div className="p-flex p-items-center p-gap-2 p-py-1.5 p-px-1 hover:p-bg-light p-rounded-md p-transition-all">
+                                    <div className="p-w-8 p-flex p-items-center p-justify-center p-text-tertiary">
+                                        <Layers size={14} />
+                                    </div>
+                                    <span className="p-text-[11px] p-font-semibold p-text-secondary p-w-24 p-shrink-0">Type</span>
+                                    <select className="sidebar-control p-font-bold p-flex-1" name="type" value={formData.type} onChange={handleChange}>
                                         <option value="TASK">Task</option>
                                         <option value="STORY">Story</option>
                                         <option value="BUG">Bug</option>
                                         <option value="EPIC">Epic</option>
                                     </select>
                                 </div>
+
                                 {/* Due Date */}
-                                <div className="p-flex p-items-center p-px-5 p-py-1.5 hover:p-bg-light p-transition-colors">
-                                    <span className="p-text-xs p-font-semibold p-text-tertiary p-w-24 p-shrink-0">Due Date</span>
-                                    <input type="date" className="form-input p-text-sm p-p-1 p-flex-1" style={{ border: '1px solid transparent', backgroundColor: 'transparent', color: 'var(--text)', borderRadius: '4px' }} name="dueDate" value={formData.dueDate} onChange={handleChange} />
+                                <div className="p-flex p-items-center p-gap-2 p-py-1.5 p-px-1 hover:p-bg-light p-rounded-md p-transition-all">
+                                    <div className="p-w-8 p-flex p-items-center p-justify-center p-text-tertiary">
+                                        <Calendar size={14} />
+                                    </div>
+                                    <span className="p-text-[11px] p-font-semibold p-text-secondary p-w-24 p-shrink-0">Due Date</span>
+                                    <input type="date" className="sidebar-control p-font-bold" name="dueDate" value={formData.dueDate} onChange={handleChange} />
                                 </div>
+
                                 {/* Story Points */}
-                                <div className="p-flex p-items-center p-px-5 p-py-1.5 hover:p-bg-light p-transition-colors">
-                                    <span className="p-text-xs p-font-semibold p-text-tertiary p-w-24 p-shrink-0">Points</span>
-                                    <input type="number" className="form-input p-text-sm p-p-1 p-flex-1" style={{ border: '1px solid transparent', backgroundColor: 'transparent', color: 'var(--text)', borderRadius: '4px' }} name="storyPoints" value={formData.storyPoints} onChange={handleChange} placeholder="-" min="0" />
+                                <div className="p-flex p-items-center p-gap-2 p-py-1.5 p-px-1 hover:p-bg-light p-rounded-md p-transition-all">
+                                    <div className="p-w-8 p-flex p-items-center p-justify-center p-text-tertiary">
+                                        <Activity size={14} />
+                                    </div>
+                                    <span className="p-text-[11px] p-font-semibold p-text-secondary p-w-24 p-shrink-0">Points</span>
+                                    <input type="number" className="sidebar-control p-font-bold" name="storyPoints" value={formData.storyPoints} onChange={handleChange} placeholder="-" min="0" />
                                 </div>
                             </div>
                         </div>
 
                         {!isNew && localTask && (
-                        <div className="p-rounded-lg p-p-5 p-border p-shadow-sm p-flex-col p-gap-3" style={{ backgroundColor: 'var(--bg-card)' }}>
-                            <h4 className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase p-flex p-items-center p-gap-1" style={{ letterSpacing: '0.05em' }}>
-                                <Tag size={12} /> Labels
-                            </h4>
-                            <TagPicker projectId={projectId} taskId={localTask.id} initialTags={localTask.taskTags || []} onChange={refreshTask} />
-                        </div>
-                        )}
-
-                        <div className="p-rounded-lg p-p-0 p-border p-shadow-sm" style={{ backgroundColor: 'var(--bg-card)', overflow: 'hidden' }}>
-                            <div className="p-px-5 p-py-3 p-border-b" style={{ backgroundColor: 'rgba(0,0,0,0.02)' }}>
-                                <h4 className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase p-flex p-items-center p-gap-2" style={{ letterSpacing: '0.05em' }}><Clock size={12} /> Time Tracking</h4>
+                        <>
+                            {/* Labels Box */}
+                            <div className="sidebar-box">
+                                <label className="sidebar-box-label p-flex p-items-center p-gap-2">
+                                    <Tag size={12} /> Labels
+                                </label>
+                                <div className="p-px-1">
+                                    <TagPicker projectId={projectId} taskId={localTask.id} initialTags={localTask.taskTags || []} onChange={refreshTask} />
+                                </div>
                             </div>
-                            <div className="p-p-5">
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
-                                    <div className="p-p-3 p-rounded-lg p-bg-main" style={{ border: '1px solid var(--border-light)' }}>
-                                        <div className="p-text-[10px] p-text-tertiary p-uppercase p-mb-1 p-font-bold">Estimated</div>
-                                        <div className="p-flex p-items-baseline p-gap-1">
+
+                            {/* Time Tracking Box */}
+                            <div className="sidebar-box">
+                                <label className="sidebar-box-label p-flex p-items-center p-gap-2">
+                                    <Clock size={12} /> Time Tracking
+                                </label>
+                                <div className="p-px-1">
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                                        <div className="p-p-2" style={{ borderBottom: '1px solid var(--border-light)' }}>
+                                            <div className="p-text-[9px] p-text-tertiary p-uppercase p-mb-1 p-font-bold" style={{ letterSpacing: '0.05em' }}>Estimated</div>
+                                            <div className="p-flex p-items-baseline p-gap-1">
+                                                <input 
+                                                    type="number" 
+                                                    className="p-p-0 p-font-black" 
+                                                    style={{ border: 'none', backgroundColor: 'transparent', color: '#ffffff', width: '65px', fontSize: '16px', outline: 'none' }} 
+                                                    name="estimatedTime" value={formData.estimatedTime} onChange={handleChange} placeholder="0" min="0" 
+                                                />
+                                                <span className="p-text-[10px] p-text-tertiary">min</span>
+                                            </div>
+                                        </div>
+                                        <div className="p-p-2" style={{ borderBottom: '1px solid var(--border-light)' }}>
+                                            <div className="p-text-[9px] p-text-tertiary p-uppercase p-mb-1 p-font-bold" style={{ letterSpacing: '0.05em' }}>Logged</div>
+                                            <div className="p-text-sm p-font-bold p-text-primary p-mt-0.5">{formatMinutes(localTask?.loggedTime || 0)}</div>
+                                        </div>
+                                    </div>
+                                    {formData.estimatedTime > 0 && (
+                                    <div className="p-mb-4">
+                                        <div style={{ height: '6px', borderRadius: '4px', background: 'var(--bg-light)', overflow: 'hidden' }}>
+                                            <div style={{ height: '100%', width: `${Math.min(100, ((localTask?.loggedTime || 0) / parseInt(formData.estimatedTime)) * 100)}%`, background: (localTask?.loggedTime || 0) > parseInt(formData.estimatedTime) ? 'var(--danger)' : 'var(--primary)', transition: 'width 0.4s ease' }} />
+                                        </div>
+                                        <div className="p-flex p-justify-between p-text-[10px] p-text-tertiary p-mt-1 p-font-semibold">
+                                            <span>{formatMinutes(localTask?.loggedTime || 0)}</span>
+                                            <span>{formatMinutes(Math.max(0, parseInt(formData.estimatedTime) - (localTask?.loggedTime || 0)))} left</span>
+                                        </div>
+                                    </div>
+                                    )}
+                                    {showLogForm ? (
+                                        <div className="p-flex p-gap-3 p-mt-3 p-p-3 p-rounded-lg p-border p-border-dashed" style={{ borderColor: 'var(--primary)', backgroundColor: 'transparent' }}>
                                             <input 
                                                 type="number" 
-                                                className="form-input p-p-0 p-text-sm p-font-bold" 
-                                                style={{ border: 'none', backgroundColor: 'transparent', color: 'var(--text)', width: '35px' }} 
-                                                name="estimatedTime" value={formData.estimatedTime} onChange={handleChange} placeholder="0" min="0" 
+                                                value={logMinutes} 
+                                                onChange={e => setLogMinutes(e.target.value)} 
+                                                placeholder="mins" 
+                                                min="1" 
+                                                className="p-p-0 p-font-bold" 
+                                                style={{ width: '65px', backgroundColor: 'transparent', color: '#ffffff', border: 'none', borderBottom: '1px solid var(--border-light)', outline: 'none', fontSize: '14px' }} 
+                                                onKeyDown={e => e.key === 'Enter' && handleLogTime()} 
                                             />
-                                            <span className="p-text-xs p-text-tertiary">min</span>
-                                        </div>
-                                    </div>
-                                    <div className="p-p-3 p-rounded-lg p-bg-main" style={{ border: '1px solid var(--border-light)' }}>
-                                        <div className="p-text-[10px] p-text-tertiary p-uppercase p-mb-1 p-font-bold">Logged</div>
-                                        <div className="p-text-sm p-font-bold p-text-primary p-mt-1">{formatMinutes(localTask?.loggedTime || 0)}</div>
-                                    </div>
-                                </div>
-                                {formData.estimatedTime > 0 && (
-                                <div className="p-mb-4">
-                                    <div style={{ height: '6px', borderRadius: '4px', background: 'var(--border-light)', overflow: 'hidden' }}>
-                                        <div style={{ height: '100%', width: `${Math.min(100, ((localTask?.loggedTime || 0) / parseInt(formData.estimatedTime)) * 100)}%`, background: (localTask?.loggedTime || 0) > parseInt(formData.estimatedTime) ? 'var(--danger)' : 'var(--primary)', transition: 'width 0.4s ease' }} />
-                                    </div>
-                                    <div className="p-flex p-justify-between p-text-[10px] p-text-tertiary p-mt-1 p-font-semibold">
-                                        <span>{formatMinutes(localTask?.loggedTime || 0)}</span>
-                                        <span>{formatMinutes(Math.max(0, parseInt(formData.estimatedTime) - (localTask?.loggedTime || 0)))} left</span>
-                                    </div>
-                                </div>
-                                )}
-                                {!isNew && (
-                                    showLogForm ? (
-                                        <div className="p-flex p-gap-2 p-mt-2 p-bg-main p-p-2 p-rounded-lg p-border p-border-dashed p-border-primary">
-                                            <input type="number" value={logMinutes} onChange={e => setLogMinutes(e.target.value)} placeholder="mins" min="1" className="form-input p-py-1 p-px-2 p-text-sm" style={{ width: '60px', backgroundColor: 'var(--bg-card)', color: 'var(--text)', border: '1px solid var(--border)' }} onKeyDown={e => e.key === 'Enter' && handleLogTime()} />
-                                            <button className="btn btn-primary p-px-3 p-py-1 p-text-xs p-flex-1" onClick={handleLogTime} disabled={logLoading}>{logLoading ? '...' : 'Log'}</button>
-                                            <button className="btn p-px-1" onClick={() => setShowLogForm(false)}>✕</button>
+                                            <button className="btn btn-primary p-px-4 p-py-1.5 p-text-xs p-flex-1" onClick={handleLogTime} disabled={logLoading}>{logLoading ? '...' : 'Log'}</button>
+                                            <button className="p-text-tertiary hover:p-text-text p-px-2" onClick={() => setShowLogForm(false)}>✕</button>
                                         </div>
                                     ) : (
-                                        <button className="btn btn-outline p-w-full p-text-xs p-py-1.5 hover:p-bg-light p-text-secondary" style={{ backgroundColor: 'var(--bg-card)' }} onClick={() => setShowLogForm(true)}>Log Work</button>
-                                    )
-                                )}
-                            </div>
-                        </div>
-
-                        {!isNew && localTask && (
-                        <div className="p-pt-2 p-border-t" style={{ borderColor: 'var(--border-light)' }}>
-                            <div className="p-flex p-items-center p-justify-between p-mb-3">
-                                <span className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase">Reporter</span>
-                                <div className="p-flex p-items-center p-gap-2">
-                                    <div className="p-flex p-items-center p-justify-center p-overflow-hidden" style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'var(--bg-light)', border: '1px solid var(--border)' }}>
-                                        {localTask.reporter?.profilePicture ? <img src={localTask.reporter.profilePicture} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (localTask.reporter?.firstName || 'R')[0]}
-                                    </div>
-                                    <span className="p-text-xs p-font-semibold p-text-secondary">{localTask.reporter?.firstName} {localTask.reporter?.lastName}</span>
+                                        <button className="btn p-border p-border-light p-w-full p-text-[11px] p-py-2 p-mt-1 hover:p-bg-light p-text-secondary" style={{ backgroundColor: 'transparent', borderRadius: '6px' }} onClick={() => setShowLogForm(true)}>+ Log Work</button>
+                                    )}
                                 </div>
                             </div>
-                            <div className="p-flex p-justify-between p-mb-2">
-                                <span className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase">Created</span>
-                                <span className="p-text-xs p-text-tertiary">{new Date(localTask.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+
+                            {/* Reporter Box */}
+                            <div className="sidebar-box" style={{ marginBottom: 0 }}>
+                                <div className="p-flex p-items-center p-justify-between p-mb-3">
+                                    <span className="sidebar-box-label" style={{ marginBottom: 0 }}>Reporter</span>
+                                    <div className="p-flex p-items-center p-gap-2">
+                                        <div className="p-flex p-items-center p-justify-center p-overflow-hidden" style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'var(--bg-light)', border: '1px solid var(--border)' }}>
+                                            {localTask.reporter?.profilePicture ? <img src={localTask.reporter.profilePicture} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (localTask.reporter?.firstName || 'R')[0]}
+                                        </div>
+                                        <span className="p-text-xs p-font-semibold p-text-text">{localTask.reporter?.firstName} {localTask.reporter?.lastName}</span>
+                                    </div>
+                                </div>
+                                <div className="p-flex p-justify-between p-mb-2">
+                                    <span className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase">Created</span>
+                                    <span className="p-text-xs p-text-tertiary">{new Date(localTask.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                                </div>
+                                <div className="p-flex p-justify-between">
+                                    <span className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase">Updated</span>
+                                    <span className="p-text-xs p-text-tertiary">{new Date(localTask.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                                </div>
                             </div>
-                            <div className="p-flex p-justify-between">
-                                <span className="p-text-[10px] p-font-bold p-text-tertiary p-uppercase">Updated</span>
-                                <span className="p-text-xs p-text-tertiary">{new Date(localTask.updatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</span>
-                            </div>
-                        </div>
+                        </>
                         )}
                     </div>
                 </div>
