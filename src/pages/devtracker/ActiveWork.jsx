@@ -8,7 +8,7 @@ import useAuthStore from '../../store/useAuthStore';
 import ErrorBoundary from '../../components/ui/ErrorBoundary';
 import './ActiveWork.css';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 const BRANCH_RE = /^[a-zA-Z0-9/_.-]+$/;
 
 // ─── Elapsed timer helper ──────────────────────────────────────────────

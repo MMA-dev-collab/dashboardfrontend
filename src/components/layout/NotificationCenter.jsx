@@ -36,7 +36,7 @@ export default function NotificationCenter() {
         const tokenStr = sessionStorage.getItem('accessToken');
         if (!tokenStr) return;
 
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const apiUrl = import.meta.env.VITE_API_URL || '/api';
         const sseUrl = `${apiUrl}/notifications/stream?token=${tokenStr}`;
 
         const eventSource = new EventSource(sseUrl);
