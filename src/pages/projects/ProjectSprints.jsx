@@ -26,9 +26,12 @@ export default function ProjectSprints({ projectId }) {
 
     const fetchSprints = async () => {
         try {
+            console.log(`[DEBUG] ProjectSprints: Fetching sprints for project: ${projectId}`);
             const { data } = await api.get(`/projects/${projectId}/sprints`);
+            console.log(`[DEBUG] ProjectSprints: API Response:`, data);
             setSprints(data.data);
-        } catch {
+        } catch (err) {
+            console.error(`[DEBUG] ProjectSprints: Fetch Error:`, err);
             toast.error('Failed to load sprints');
         } finally {
             setLoading(false);
