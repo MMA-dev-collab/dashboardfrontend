@@ -30,6 +30,11 @@ export default function SprintDetails() {
     const [pointsForm, setPointsForm] = useState({ totalPoints: 0 });
     const [pointsSaving, setPointsSaving] = useState(false);
 
+    // Budget editing state
+    const [editingBudget, setEditingBudget] = useState(false);
+    const [budgetForm, setBudgetForm] = useState({ plannedBudget: 0, actualCost: 0 });
+    const [budgetSaving, setBudgetSaving] = useState(false);
+
     // Sprint team state
     const [showTeam, setShowTeam] = useState(false);
     const [project, setProject] = useState(null);
@@ -67,6 +72,10 @@ export default function SprintDetails() {
             const metricsRes = await api.get(`/projects/${projectId}/sprints/${sprintId}/metrics`);
             setMetrics(metricsRes.data.data);
             setTeamMembers((metricsRes.data.data.members || []).map(m => m.userId));
+            setBudgetForm({
+                plannedBudget: metricsRes.data.data.budget?.plannedBudget || 0,
+                actualCost: metricsRes.data.data.budget?.actualCost || 0
+            });
         } catch {
             toast.error('Failed to load sprint details');
         } finally {
@@ -113,6 +122,25 @@ export default function SprintDetails() {
             toast.error('Failed to update points');
         } finally {
             setPointsSaving(false);
+        }
+    };
+
+    const handleSaveBudget = async () => {
+        setBudgetSaving(true);
+        try {
+            await api.patch(`/projects/${projectId}/sprints/${sprintId}`, { 
+                budget: {
+                    plannedBudget: Number(budgetForm.plannedBudget),
+                    actualCost: Number(budgetForm.actualCost)
+                }
+            });
+            toast.success('Sprint budget updated');
+            setEditingBudget(false);
+            await fetchSprintData();
+        } catch {
+            toast.error('Failed to update budget');
+        } finally {
+            setBudgetSaving(false);
         }
     };
 
@@ -461,11 +489,32 @@ export default function SprintDetails() {
                             </div>
                         </div>
                         <div className="card">
-                            <div className="card-body p-flex p-items-center p-gap-4">
-                                <div className="p-avatar p-bg-light p-text-success"><DollarSign size={24} /></div>
-                                <div>
-                                    <div className="p-text-sm p-text-tertiary">Budget Tracked</div>
-                                    <div className="p-text-2xl p-font-bold">${metrics?.budget?.actualCost || 0} <span className="p-text-sm p-text-tertiary">/ ${metrics?.budget?.amount || 0}</span></div>
+                            <div className="card-body p-flex p-items-center p-justify-between">
+                                <div className="p-flex p-items-center p-gap-4">
+                                    <div className="p-avatar p-bg-light p-text-success"><DollarSign size={24} /></div>
+                                    <div>
+                                        <div className="p-text-sm p-text-tertiary p-flex p-items-center p-gap-2">
+                                            Budget Tracked
+                                            {!editingBudget && (
+                                                <button className="btn p-p-1" style={{ fontSize: '10px' }} onClick={() => setEditingBudget(true)}>
+                                                    <Edit2 size={12} />
+                                                </button>
+                                            )}
+                                        </div>
+                                        {editingBudget ? (
+                                            <div className="p-flex p-items-center p-gap-2 p-mt-1">
+                                                <input type="number" placeholder="Cost" value={budgetForm.actualCost} onChange={e => setBudgetForm(f => ({ ...f, actualCost: e.target.value }))} style={{ border: '1px solid var(--border)', borderRadius: '6px', padding: '4px 8px', fontSize: '13px', width: '80px' }} />
+                                                <span className="p-text-tertiary">/</span>
+                                                <input type="number" placeholder="Budget" value={budgetForm.plannedBudget} onChange={e => setBudgetForm(f => ({ ...f, plannedBudget: e.target.value }))} style={{ border: '1px solid var(--border)', borderRadius: '6px', padding: '4px 8px', fontSize: '13px', width: '80px' }} />
+                                                <button className="btn p-p-1 p-text-success" onClick={handleSaveBudget} disabled={budgetSaving}><Check size={16} /></button>
+                                                <button className="btn p-p-1" onClick={() => setEditingBudget(false)}><X size={16} /></button>
+                                            </div>
+                                        ) : (
+                                            <div className="p-text-2xl p-font-bold">
+                                                ${metrics?.budget?.actualCost || 0} <span className="p-text-sm p-text-tertiary">/ ${metrics?.budget?.plannedBudget || 0}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -3,32 +3,32 @@ import { useEffect, lazy, Suspense } from 'react';
 import useAuthStore from './store/useAuthStore';
 import useThemeStore from './store/useThemeStore';
 import DashboardLayout from './components/layout/DashboardLayout';
-import Login from './pages/auth/Login';
-import Dashboard from './pages/dashboard/Dashboard';
-import Projects from './pages/projects/Projects';
-import Finance from './pages/finance/Finance';
-import Wallets from './pages/wallets/Wallets';
-import Withdrawals from './pages/withdrawals/Withdrawals';
-import Expenses from './pages/expenses/Expenses';
-import Leads from './pages/crm/Leads';
-import AuditLog from './pages/audit/AuditLog';
-import Proposals from './pages/proposals/Proposals';
-import Subscriptions from './pages/subscriptions/Subscriptions';
-import DocumentCenter from './pages/documents/DocumentCenter';
-import KnowledgeBase from './pages/knowledge/KnowledgeBase';
-import OperationsHub from './pages/operations/OperationsHub';
-import InternalChat from './pages/chat/InternalChat';
-import AiChatPage from './pages/chat/AiChatPage';
-import Notifications from './pages/notifications/Notifications';
-import Profile from './pages/profile/Profile';
-import CalendarPage from './pages/calendar/CalendarPage';
-import AutomationBuilder from './pages/automations/AutomationBuilder';
-import AnalyticsDashboard from './pages/dashboard/AnalyticsDashboard';
-import ActiveWork from './pages/devtracker/ActiveWork';
 
-// Lazy-load heavy pages
+const Login = lazy(() => import('./pages/auth/Login'));
+const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const Projects = lazy(() => import('./pages/projects/Projects'));
+const Finance = lazy(() => import('./pages/finance/Finance'));
+const Wallets = lazy(() => import('./pages/wallets/Wallets'));
+const Withdrawals = lazy(() => import('./pages/withdrawals/Withdrawals'));
+const Expenses = lazy(() => import('./pages/expenses/Expenses'));
+const Leads = lazy(() => import('./pages/crm/Leads'));
+const AuditLog = lazy(() => import('./pages/audit/AuditLog'));
+const Proposals = lazy(() => import('./pages/proposals/Proposals'));
+const Subscriptions = lazy(() => import('./pages/subscriptions/Subscriptions'));
+const DocumentCenter = lazy(() => import('./pages/documents/DocumentCenter'));
+const KnowledgeBase = lazy(() => import('./pages/knowledge/KnowledgeBase'));
+const OperationsHub = lazy(() => import('./pages/operations/OperationsHub'));
+const InternalChat = lazy(() => import('./pages/chat/InternalChat'));
+const AiChatPage = lazy(() => import('./pages/chat/AiChatPage'));
+const Notifications = lazy(() => import('./pages/notifications/Notifications'));
+const Profile = lazy(() => import('./pages/profile/Profile'));
+const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
+const AutomationBuilder = lazy(() => import('./pages/automations/AutomationBuilder'));
+const AnalyticsDashboard = lazy(() => import('./pages/dashboard/AnalyticsDashboard'));
+const ActiveWork = lazy(() => import('./pages/devtracker/ActiveWork'));
 const ProjectDetails = lazy(() => import('./pages/projects/ProjectDetails'));
 const SprintDetails = lazy(() => import('./pages/projects/SprintDetails'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '0.75rem', color: 'var(--text-tertiary)' }}>
@@ -36,9 +36,8 @@ const PageLoader = () => (
   </div>
 );
 
-
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading } = useAuthStore();
+function ProtectedRoute({ children, role }) {
+  const { isAuthenticated, isLoading, user } = useAuthStore();
 
   if (isLoading) {
     return (
@@ -49,7 +48,16 @@ function ProtectedRoute({ children }) {
     );
   }
 
-  return isAuthenticated ? children : <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Basic role guard if role prop is passed
+  if (role && user?.role !== role) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
 export default function App() {
@@ -59,45 +67,47 @@ export default function App() {
   useEffect(() => {
     initTheme();
     checkAuth();
-  }, []);
+  }, [initTheme, checkAuth]);
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
-        <Route
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id" element={<Suspense fallback={<PageLoader />}><ProjectDetails /></Suspense>} />
-          <Route path="/projects/:id/sprints/:sprintId" element={<Suspense fallback={<PageLoader />}><SprintDetails /></Suspense>} />
-          <Route path="/finance" element={<Finance />} />
-          <Route path="/wallets" element={<Wallets />} />
-          <Route path="/withdrawals" element={<Withdrawals />} />
-          <Route path="/expenses" element={<Expenses />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/audit" element={<AuditLog />} />
-          <Route path="/proposals" element={<Proposals />} />
-          <Route path="/subscriptions" element={<Subscriptions />} />
-          <Route path="/documents" element={<DocumentCenter />} />
-          <Route path="/knowledge" element={<KnowledgeBase />} />
-          <Route path="/operations" element={<OperationsHub />} />
-          <Route path="/chat" element={<InternalChat />} />
-          <Route path="/ai-chat" element={<AiChatPage />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path="/analytics" element={<AnalyticsDashboard />} />
-          <Route path="/automations" element={<AutomationBuilder />} />
-          <Route path="/active-work" element={<ActiveWork />} />
-          <Route path="/profile/:id" element={<Profile />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+          <Route
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/projects/:id" element={<ProjectDetails />} />
+            <Route path="/projects/:id/sprints/:sprintId" element={<SprintDetails />} />
+            <Route path="/finance" element={<Finance />} />
+            <Route path="/wallets" element={<Wallets />} />
+            <Route path="/withdrawals" element={<Withdrawals />} />
+            <Route path="/expenses" element={<Expenses />} />
+            <Route path="/leads" element={<Leads />} />
+            <Route path="/audit" element={<AuditLog />} />
+            <Route path="/proposals" element={<Proposals />} />
+            <Route path="/subscriptions" element={<Subscriptions />} />
+            <Route path="/documents" element={<DocumentCenter />} />
+            <Route path="/knowledge" element={<KnowledgeBase />} />
+            <Route path="/operations" element={<OperationsHub />} />
+            <Route path="/chat" element={<InternalChat />} />
+            <Route path="/ai-chat" element={<AiChatPage />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/analytics" element={<AnalyticsDashboard />} />
+            <Route path="/automations" element={<AutomationBuilder />} />
+            <Route path="/active-work" element={<ActiveWork />} />
+            <Route path="/profile/:id" element={<Profile />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }
