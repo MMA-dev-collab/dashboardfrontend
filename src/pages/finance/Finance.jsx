@@ -54,8 +54,11 @@ export default function Finance() {
                     <p className="page-subtitle">Detailed breakdown of company revenue, expenses, and liquidity.</p>
                 </div>
                 <div className="header-actions">
-                    <button className="btn btn-secondary">
-                        <Download size={18} /> Export PDF
+                    <button className="btn btn-outline btn-sm" onClick={() => import('../../utils/exportReports').then(m => m.exportFinancePDF(api))}>
+                        <Download size={14} /> PDF
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={() => import('../../utils/exportXls').then(m => m.exportFinanceXLS(api))}>
+                        <Download size={14} /> Excel
                     </button>
                 </div>
             </header>

@@ -28,7 +28,8 @@ import {
     Bot,
     Zap,
     BarChart2,
-    Activity
+    Activity,
+    CheckSquare
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import useThemeStore from '../../store/useThemeStore';
@@ -54,6 +55,7 @@ const navItems = [
     { path: '/ai-chat', label: 'AI Assistant', icon: Bot },
     { path: '/automations', label: 'Automations', icon: Zap, role: 'Admin' },
     { path: '/active-work', label: 'Active Work', icon: Activity },
+    { path: '/my-tasks', label: 'My Tasks', icon: CheckSquare },
     { path: '/calendar', label: 'Calendar', icon: CalendarDays },
     { path: '/notifications', label: 'Notifications', icon: Bell },
     { path: '/audit', label: 'Audit Log', icon: History, role: 'Admin' },

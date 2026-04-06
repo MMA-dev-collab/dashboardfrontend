@@ -26,6 +26,7 @@ const CalendarPage = lazy(() => import('./pages/calendar/CalendarPage'));
 const AutomationBuilder = lazy(() => import('./pages/automations/AutomationBuilder'));
 const AnalyticsDashboard = lazy(() => import('./pages/dashboard/AnalyticsDashboard'));
 const ActiveWork = lazy(() => import('./pages/devtracker/ActiveWork'));
+const MyTasks = lazy(() => import('./pages/tasks/MyTasks'));
 const ProjectDetails = lazy(() => import('./pages/projects/ProjectDetails'));
 const SprintDetails = lazy(() => import('./pages/projects/SprintDetails'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -103,6 +104,7 @@ export default function App() {
             <Route path="/analytics" element={<AnalyticsDashboard />} />
             <Route path="/automations" element={<AutomationBuilder />} />
             <Route path="/active-work" element={<ActiveWork />} />
+            <Route path="/my-tasks" element={<MyTasks />} />
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Route>

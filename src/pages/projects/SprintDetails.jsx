@@ -147,8 +147,9 @@ export default function SprintDetails() {
     const handleSaveTeam = async () => {
         setTeamSaving(true);
         try {
+            const validMembers = teamMembers.filter(Boolean).map(userId => ({ userId }));
             await api.patch(`/projects/${projectId}/sprints/${sprintId}/members`, {
-                members: teamMembers.map(userId => ({ userId }))
+                members: validMembers
             });
             toast.success('Sprint team updated');
             setShowTeam(false);
@@ -379,12 +380,14 @@ export default function SprintDetails() {
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '8px' }}>
                             {(project?.partners || []).map(p => {
-                                const selected = teamMembers.includes(p.userId);
+                                const userId = p.user?.id;
+                                if (!userId) return null;
+                                const selected = teamMembers.includes(userId);
                                 return (
                                     <div
-                                        key={p.userId}
+                                        key={p.id}
                                         onClick={() => setTeamMembers(prev =>
-                                            selected ? prev.filter(id => id !== p.userId) : [...prev, p.userId]
+                                            selected ? prev.filter(id => id !== userId) : [...prev, userId]
                                         )}
                                         style={{
                                             display: 'flex', alignItems: 'center', gap: '10px',

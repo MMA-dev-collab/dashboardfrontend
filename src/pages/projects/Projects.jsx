@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Briefcase, User, Mail, DollarSign, Percent, FileText, ChevronRight, X, Trash2, Edit2, Calendar } from 'lucide-react';
+import { Plus, Search, Filter, Briefcase, User, Mail, DollarSign, Percent, FileText, ChevronRight, X, Trash2, Edit2, Calendar, BarChart3, Download } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
+import ProjectComparison from './ProjectComparison';
 import '../Shared.css';
 import './Projects.css';
 
@@ -24,6 +25,7 @@ export default function Projects() {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [viewMode, setViewMode] = useState('table'); // table | comparison
     const [showForm, setShowForm] = useState(false);
     const [editProject, setEditProject] = useState(null);
     const [deleteProject, setDeleteProject] = useState(null);
@@ -157,6 +159,12 @@ export default function Projects() {
                     <p className="page-subtitle">Manage and track company projects portfolio.</p>
                 </div>
                 <div className="header-actions">
+                    <button className="btn btn-outline btn-sm" onClick={() => import('../../utils/exportReports').then(m => m.exportProjectsPDF(api))}>
+                        <Download size={14} /> PDF
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={() => import('../../utils/exportXls').then(m => m.exportProjectsXLS(api))}>
+                        <Download size={14} /> Excel
+                    </button>
                     {isAdmin && (
                         <button className="btn btn-primary" onClick={() => {
                             if (users.length === 0) fetchUsers();
@@ -167,6 +175,21 @@ export default function Projects() {
                     )}
                 </div>
             </header>
+
+            <div className="view-toggle">
+                <button
+                    className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                    onClick={() => setViewMode('table')}
+                >
+                    <Briefcase size={14} /> Table
+                </button>
+                <button
+                    className={`view-btn ${viewMode === 'comparison' ? 'active' : ''}`}
+                    onClick={() => setViewMode('comparison')}
+                >
+                    <BarChart3 size={14} /> Comparison
+                </button>
+            </div>
 
             <div className="filter-bar">
                 <div className="search-field">
@@ -300,6 +323,10 @@ export default function Projects() {
                         </table>
                     </div>
                 </div>
+            )}
+
+            {viewMode === 'comparison' && (
+                <ProjectComparison />
             )}
 
             {/* Modal for New Project */}

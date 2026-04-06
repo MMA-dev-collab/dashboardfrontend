@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wallet as WalletIcon, ArrowDownRight, ArrowUpRight, History, Users, TrendingUp, DollarSign, Clock } from 'lucide-react';
+import { Wallet as WalletIcon, ArrowDownRight, ArrowUpRight, History, Users, TrendingUp, DollarSign, Clock, Download } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
 import '../Shared.css';
@@ -71,6 +71,14 @@ export default function Wallets() {
                 <div className="header-left">
                     <h1 className="page-title">Pocket & Wallets</h1>
                     <p className="page-subtitle">Track your earnings and manage your available funds.</p>
+                </div>
+                <div className="header-actions">
+                    <button className="btn btn-outline btn-sm" onClick={() => import('../../utils/exportReports').then(m => m.exportWalletsPDF(api, user.id, isAdmin))}>
+                        <Download size={14} /> PDF
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={() => import('../../utils/exportXls').then(m => m.exportWalletsXLS(api, user.id, isAdmin))}>
+                        <Download size={14} /> Excel
+                    </button>
                 </div>
             </header>
 

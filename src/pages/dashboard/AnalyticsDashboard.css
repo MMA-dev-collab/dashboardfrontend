@@ -62,6 +62,8 @@
 .chart-container {
   height: 300px;
   width: 100%;
+  min-height: 250px;
+  flex: 1;
 }
 
 @media (max-width: 1024px) {
@@ -71,4 +73,441 @@
   .chart-card.full-width {
     grid-column: 1;
   }
+}
+
+/* Report KPIs */
+.report-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.report-kpi-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Bottleneck Bars */
+.bottleneck-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bottleneck-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bottleneck-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.bottleneck-track {
+  flex: 1;
+  height: 20px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bottleneck-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  min-width: 2%;
+}
+
+.bottleneck-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  width: 50px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bottleneck-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  width: 80px;
+  flex-shrink: 0;
+}
+
+/* Assignee Bars */
+.assignee-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.assignee-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.assignee-name {
+  font-size: 0.85rem;
+  color: var(--text);
+  width: 140px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.assignee-track {
+  flex: 1;
+  height: 18px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.assignee-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  min-width: 2%;
+}
+
+.assignee-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Workload Heatmap Table */
+.heatmap-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.heatmap-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+}
+
+.heatmap-data-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  transition: background 0.15s;
+}
+
+.heatmap-data-row:hover {
+  background: var(--bg);
+}
+
+.heatmap-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 180px;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.heatmap-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.heatmap-avatar-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.heatmap-name-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heatmap-priority {
+  flex: 1;
+  text-align: center;
+  min-width: 80px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.heatmap-cell {
+  flex: 1;
+  min-width: 80px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.15s;
+}
+
+.heatmap-empty {
+  background: var(--bg);
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.heatmap-low {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.heatmap-medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.heatmap-high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.heatmap-critical {
+  background: rgba(239, 68, 68, 0.35);
+  color: #ef4444;
+  font-weight: 900;
+}
+
+.heatmap-count-badge {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Heatmap Detail Rows */
+.heatmap-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.25rem;
+  border-left: 2px solid var(--primary);
+  margin-left: 1.5rem;
+}
+
+.heatmap-detail-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.heatmap-project-tags {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.heatmap-project-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.heatmap-project-count {
+  background: var(--primary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+@media (max-width: 1024px) {
+  .heatmap-name-cell {
+    width: 120px;
+  }
+  .heatmap-priority {
+    min-width: 50px;
+    font-size: 0.6rem;
+  }
+  .heatmap-cell {
+    min-width: 50px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Active Work Hours */
+.work-hours-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.work-hours-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.work-hours-name {
+  font-size: 0.85rem;
+  color: var(--text);
+  width: 140px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.work-hours-track {
+  flex: 1;
+  height: 18px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.work-hours-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  min-width: 2%;
+}
+
+.work-hours-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  width: 50px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.work-hours-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Work Hours Detail Rows */
+.work-hours-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.25rem;
+  border-left: 2px solid var(--primary);
+  margin-left: 1.5rem;
+}
+
+.work-hours-detail-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text);
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.work-hours-project-tags {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.work-hours-project-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.work-hours-project-count {
+  background: var(--primary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+}
+
+.work-hours-push-badge,
+.work-hours-pull-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.work-hours-push-badge {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.work-hours-pull-badge {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
 }

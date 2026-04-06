@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowDownToLine, Check, X, User, DollarSign, FileText, Calendar, Clock, AlertCircle, Trash2 } from 'lucide-react';
+import { ArrowDownToLine, Check, X, User, DollarSign, FileText, Calendar, Clock, AlertCircle, Trash2, Download } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
 import '../Shared.css';
@@ -158,6 +158,12 @@ export default function Withdrawals() {
                     <p className="page-subtitle">Submit or process withdrawal requests from partner wallets.</p>
                 </div>
                 <div className="header-actions">
+                    <button className="btn btn-outline btn-sm" onClick={() => import('../../utils/exportReports').then(m => m.exportWithdrawalsPDF(api))}>
+                        <Download size={14} /> PDF
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={() => import('../../utils/exportXls').then(m => m.exportWithdrawalsXLS(api))}>
+                        <Download size={14} /> Excel
+                    </button>
                     <button className="btn btn-primary" onClick={() => setShowForm(true)}>
                         <ArrowDownToLine size={18} /> Request Payout
                     </button>
