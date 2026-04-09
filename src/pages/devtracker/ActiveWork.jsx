@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Activity, GitBranch, Clock, CheckCircle2,
-  XCircle, Zap, AlertTriangle, History, RefreshCw
+  XCircle, Zap, AlertTriangle, History, RefreshCw,
+  Pause, Play, Trash2
 } from 'lucide-react';
 import api from '../../api/client';
 import useAuthStore from '../../store/useAuthStore';
@@ -12,15 +13,23 @@ const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const BRANCH_RE = /^[a-zA-Z0-9/_.-]+$/;
 
 // ─── Elapsed timer helper ──────────────────────────────────────────────
-function useElapsed(startedAt) {
-  const calc = () => (startedAt ? Date.now() - new Date(startedAt).getTime() : 0);
+// Handles paused sessions by subtracting totalPausedMs and current pause duration
+function useElapsed(startedAt, pausedAt, totalPausedMs = 0) {
+  const calc = () => {
+    if (!startedAt) return 0;
+    const now = Date.now();
+    const start = new Date(startedAt).getTime();
+    const baseElapsed = now - start;
+    const currentPauseDuration = pausedAt ? (now - new Date(pausedAt).getTime()) : 0;
+    return Math.max(0, baseElapsed - totalPausedMs - currentPauseDuration);
+  };
   const [elapsed, setElapsed] = useState(calc);
   useEffect(() => {
     setElapsed(calc());
     const t = setInterval(() => setElapsed(calc()), 1000);
     return () => clearInterval(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startedAt]);
+  }, [startedAt, pausedAt, totalPausedMs]);
 
   const m = Math.floor(elapsed / 60000);
   const s = Math.floor((elapsed % 60000) / 1000);
@@ -28,16 +37,26 @@ function useElapsed(startedAt) {
 }
 
 // ─── Session Card ──────────────────────────────────────────────────────
-function SessionCard({ session, currentUserId, isAdmin, onFinish, onForceEnd }) {
+function SessionCard({
+  session,
+  currentUserId,
+  isAdmin,
+  onFinish,
+  onForceEnd,
+  onPause,
+  onResume,
+  onCancel
+}) {
   const isMine = session.userId === currentUserId;
-  const elapsed = useElapsed(session.activeStartedAt);
+  const isPaused = !!session.pausedAt;
+  const elapsed = useElapsed(session.activeStartedAt, session.pausedAt, session.totalPausedMs || 0);
   const initials = `${session.user.firstName[0]}${session.user.lastName[0]}`.toUpperCase();
 
   return (
-    <div className={`aw-card ${isMine ? 'is-mine' : ''}`}>
+    <div className={`aw-card ${isMine ? 'is-mine' : ''} ${isPaused ? 'is-paused' : ''}`}>
       <div className="aw-card-glow" />
       <div className="aw-card-top">
-        <div className="aw-status-dot active" />
+        <div className={`aw-status-dot ${isPaused ? 'paused' : 'active'}`} />
         <div className="aw-avatar">
           {session.user.profilePicture
             ? <img src={session.user.profilePicture} alt={initials} />
@@ -52,6 +71,11 @@ function SessionCard({ session, currentUserId, isAdmin, onFinish, onForceEnd }) 
             {session.project.name}
           </div>
         </div>
+        {isPaused && (
+          <div className="aw-paused-badge">
+            <Pause size={12} /> PAUSED
+          </div>
+        )}
       </div>
 
       <div className="aw-card-body">
@@ -76,15 +100,30 @@ function SessionCard({ session, currentUserId, isAdmin, onFinish, onForceEnd }) 
         )}
         <div className="aw-info-row">
           <Clock size={14} />
-          <span className="aw-timer">{elapsed}</span>
+          <span className={`aw-timer ${isPaused ? 'paused' : ''}`}>{elapsed}</span>
+          {isPaused && <span className="aw-paused-label"> (timer stopped)</span>}
         </div>
       </div>
 
       <div className="aw-card-footer">
         {isMine && (
-          <button className="aw-btn aw-btn-finish" onClick={() => onFinish(session)}>
-            <CheckCircle2 size={14} /> Finish Work
-          </button>
+          <>
+            {isPaused ? (
+              <button className="aw-btn aw-btn-resume" onClick={() => onResume(session)}>
+                <Play size={14} /> Resume
+              </button>
+            ) : (
+              <button className="aw-btn aw-btn-pause" onClick={() => onPause(session)}>
+                <Pause size={14} /> Pause
+              </button>
+            )}
+            <button className="aw-btn aw-btn-finish" onClick={() => onFinish(session)}>
+              <CheckCircle2 size={14} /> Finish
+            </button>
+            <button className="aw-btn aw-btn-cancel" onClick={() => onCancel(session)}>
+              <Trash2 size={14} />
+            </button>
+          </>
         )}
         {isAdmin && !isMine && (
           <button className="aw-btn aw-btn-force" onClick={() => onForceEnd(session)}>
@@ -93,7 +132,7 @@ function SessionCard({ session, currentUserId, isAdmin, onFinish, onForceEnd }) 
         )}
         {!isMine && !isAdmin && (
           <div style={{ fontSize: '0.78rem', color: 'var(--text-tertiary)', width:'100%', textAlign:'right' }}>
-            Active session — you cannot modify it
+            {isPaused ? 'Paused session' : 'Active session'} — you cannot modify it
           </div>
         )}
       </div>
@@ -348,9 +387,11 @@ export default function ActiveWork() {
     const es = new EventSource(`${API}/devtracker/stream?token=${token}`);
     es.onmessage = (e) => {
       const payload = JSON.parse(e.data);
-      if (payload.type === 'SESSION_STARTED' || payload.type === 'SESSION_ENDED') {
+      if (['SESSION_STARTED', 'SESSION_ENDED', 'SESSION_CANCELLED'].includes(payload.type)) {
         fetchSessions();
         fetchHistory(1);
+      } else if (['SESSION_PAUSED', 'SESSION_RESUMED'].includes(payload.type)) {
+        fetchSessions();
       }
     };
     es.onerror = () => {
@@ -392,6 +433,38 @@ export default function ActiveWork() {
       showToast('Session force-ended.');
     } catch (err) {
       showToast(err.response?.data?.message || 'Error');
+    }
+  };
+
+  // ── Pause / Resume / Cancel ──
+  const handlePause = async (session) => {
+    try {
+      await api.post(`/devtracker/pause/${session.id}`);
+      showToast('⏸️ Session paused');
+      fetchSessions();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Error pausing session');
+    }
+  };
+
+  const handleResume = async (session) => {
+    try {
+      await api.post(`/devtracker/resume/${session.id}`);
+      showToast('▶️ Session resumed');
+      fetchSessions();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Error resuming session');
+    }
+  };
+
+  const handleCancel = async (session) => {
+    if (!window.confirm('Cancel this session? This will remove it permanently without recording history.')) return;
+    try {
+      await api.post(`/devtracker/cancel/${session.id}`);
+      showToast('🗑️ Session cancelled');
+      fetchSessions();
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Error cancelling session');
     }
   };
 
@@ -458,6 +531,9 @@ export default function ActiveWork() {
                 isAdmin={isAdmin}
                 onFinish={setFinishSession}
                 onForceEnd={handleForceEnd}
+                onPause={handlePause}
+                onResume={handleResume}
+                onCancel={handleCancel}
               />
             ))}
           </div>
