@@ -1,0 +1,104 @@
+.ftm-page { padding: 2rem; max-width: 900px; margin: 0 auto; }
+.ftm-header { margin-bottom: 2rem; }
+.ftm-title { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+.ftm-subtitle { font-size: 0.85rem; color: var(--text-tertiary); font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace; }
+.ftm-loading { display: flex; justify-content: center; padding: 4rem; color: var(--text-tertiary); }
+
+.ftm-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.ftm-tab {
+  display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem;
+  background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 10px;
+  color: var(--text-secondary); font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.2s;
+}
+.ftm-tab.active { background: rgba(168,85,247,0.12); border-color: #a855f7; color: #a855f7; }
+.ftm-tab:hover { border-color: rgba(168,85,247,0.4); }
+.ftm-badge {
+  background: #ff4757; color: white; font-size: 0.6rem; font-weight: 700;
+  padding: 0.1rem 0.4rem; border-radius: 8px; min-width: 16px; text-align: center;
+}
+
+.ftm-section { }
+.ftm-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.ftm-section-header h2 { font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-primary); }
+.ftm-add-btn {
+  display: flex; align-items: center; gap: 0.35rem; padding: 0.45rem 0.85rem;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7); color: white; border: none;
+  border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.ftm-add-btn:disabled { opacity: 0.5; }
+
+.ftm-teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.ftm-team-card {
+  background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 14px;
+  padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; transition: all 0.2s;
+}
+.ftm-team-card:hover { border-color: rgba(168,85,247,0.3); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+.ftm-team-header { display: flex; justify-content: space-between; align-items: center; }
+.ftm-team-header h3 { font-size: 1rem; font-weight: 700; margin: 0; color: var(--text-primary); }
+.ftm-team-role {
+  font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 0.15rem 0.5rem; border-radius: 4px;
+}
+.ftm-team-role { background: rgba(168,85,247,0.1); color: #a855f7; }
+.ftm-team-desc { font-size: 0.82rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+.ftm-team-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--text-tertiary); }
+.ftm-team-members { display: flex; gap: -0.5rem; }
+.ftm-member-avatar {
+  width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #6c5ce7, #a855f7);
+  color: white; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg-card); margin-left: -6px; overflow: hidden;
+}
+.ftm-member-avatar:first-child { margin-left: 0; }
+.ftm-member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ftm-leave-btn { align-self: flex-start; padding: 0.35rem 0.75rem; background: none; border: 1px solid var(--border-light); border-radius: 6px; font-size: 0.75rem; color: var(--text-tertiary); cursor: pointer; }
+.ftm-leave-btn:hover { border-color: #ff4757; color: #ff4757; }
+
+.ftm-add-friend { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.ftm-add-friend input, .ftm-user-select { flex: 1; padding: 0.55rem 0.85rem; border: 1px solid var(--border-light); border-radius: 8px; background: var(--bg-main); color: var(--text-primary); font-size: 0.85rem; }
+.ftm-add-friend input:focus, .ftm-user-select:focus { outline: none; border-color: #a855f7; }
+.ftm-hint { font-size: 0.78rem; color: var(--text-tertiary); margin: 0 0 0.75rem; font-style: italic; }
+
+.ftm-friends-list { display: flex; flex-direction: column; gap: 0.35rem; }
+.ftm-friend-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 10px; }
+.ftm-friend-name { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); }
+
+.ftm-avail-grid { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+.ftm-avail-row {
+  display: flex; flex-direction: column; gap: 0.5rem; padding: 0.65rem 0.85rem;
+  background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 10px;
+  transition: all 0.2s;
+}
+.ftm-avail-row.enabled { border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.03); }
+.ftm-avail-day-header { display: flex; align-items: center; justify-content: space-between; }
+.ftm-avail-day { display: flex; align-items: center; gap: 0.5rem; min-width: 100px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+.ftm-avail-day input { accent-color: #a855f7; }
+.ftm-add-slot-btn { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1px dashed var(--border-light); border-radius: 6px; background: none; color: var(--text-tertiary); cursor: pointer; }
+.ftm-add-slot-btn:hover { border-color: #a855f7; color: #a855f7; }
+.ftm-avail-slot { display: flex; align-items: center; gap: 0.5rem; margin-left: 1.5rem; }
+.ftm-avail-times { display: flex; align-items: center; gap: 0.5rem; }
+.ftm-avail-times input { padding: 0.4rem 0.5rem; border: 1px solid var(--border-light); border-radius: 6px; background: var(--bg-main); color: var(--text-primary); font-size: 0.82rem; font-family: 'SF Mono', 'Fira Code', monospace; }
+.ftm-avail-times span { color: var(--text-tertiary); font-size: 0.8rem; }
+.ftm-remove-slot-btn { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; border: none; border-radius: 4px; background: rgba(255,71,87,0.1); color: #ff4757; cursor: pointer; }
+.ftm-save-btn {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.5rem;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7); color: white; border: none;
+  border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.85rem;
+}
+.ftm-save-btn:disabled { opacity: 0.5; }
+
+.ftm-invites-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.ftm-invite-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.75rem 1rem; background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 10px;
+}
+.ftm-invite-info { display: flex; flex-direction: column; gap: 0.15rem; }
+.ftm-invite-from { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+.ftm-invite-team { font-size: 0.78rem; color: var(--text-tertiary); }
+.ftm-invite-actions { display: flex; gap: 0.35rem; }
+.ftm-accept-btn, .ftm-decline-btn {
+  padding: 0.4rem; border: none; border-radius: 6px; cursor: pointer; display: flex;
+}
+.ftm-accept-btn { background: rgba(46,213,115,0.1); color: #2ed573; }
+.ftm-decline-btn { background: rgba(255,71,87,0.1); color: #ff4757; }
+
+.ftm-empty { font-size: 0.85rem; color: var(--text-tertiary); text-align: center; padding: 2rem; }

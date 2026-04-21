@@ -72,6 +72,59 @@
     overflow-y: auto;
 }
 
+.nav-section {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-dark);
+}
+
+.nav-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.5rem 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-tertiary);
+}
+
+.nav-section-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-tertiary);
+}
+
+.nav-section-chevron {
+    transition: transform 0.2s;
+    opacity: 0.5;
+}
+
+.nav-section-chevron.expanded {
+    transform: rotate(180deg);
+}
+
+.nav-section-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #a855f7;
+    margin: 0 auto;
+}
+
+.nav-section-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-section-items li {
+    list-style: none;
+}
+
 .nav-link {
     display: flex;
     align-items: center;

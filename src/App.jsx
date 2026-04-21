@@ -27,6 +27,14 @@ const AutomationBuilder = lazy(() => import('./pages/automations/AutomationBuild
 const AnalyticsDashboard = lazy(() => import('./pages/dashboard/AnalyticsDashboard'));
 const ActiveWork = lazy(() => import('./pages/devtracker/ActiveWork'));
 const MyTasks = lazy(() => import('./pages/tasks/MyTasks'));
+const GrowthLayout = lazy(() => import('./pages/growth/GrowthLayout'));
+const GrowthOverview = lazy(() => import('./pages/growth/GrowthOverview'));
+const GrowthSettings = lazy(() => import('./pages/growth/GrowthSettings'));
+const GrowthTasks = lazy(() => import('./pages/growth/GrowthTasks'));
+const GrowthSchedule = lazy(() => import('./pages/growth/GrowthSchedule'));
+const GrowthGaming = lazy(() => import('./pages/growth/GrowthGaming'));
+const GrowthXP = lazy(() => import('./pages/growth/GrowthXP'));
+const GrowthTeams = lazy(() => import('./pages/growth/GrowthTeams'));
 const ProjectDetails = lazy(() => import('./pages/projects/ProjectDetails'));
 const SprintDetails = lazy(() => import('./pages/projects/SprintDetails'));
 const NotFound = lazy(() => import('./pages/NotFound'));
@@ -105,6 +113,15 @@ export default function App() {
             <Route path="/automations" element={<AutomationBuilder />} />
             <Route path="/active-work" element={<ActiveWork />} />
             <Route path="/my-tasks" element={<MyTasks />} />
+            <Route path="/growth" element={<GrowthLayout />}>
+              <Route index element={<GrowthOverview />} />
+              <Route path="tasks" element={<GrowthTasks />} />
+              <Route path="schedule" element={<GrowthSchedule />} />
+              <Route path="gaming" element={<GrowthGaming />} />
+              <Route path="xp" element={<GrowthXP />} />
+              <Route path="teams" element={<GrowthTeams />} />
+              <Route path="settings" element={<GrowthSettings />} />
+            </Route>
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Route>

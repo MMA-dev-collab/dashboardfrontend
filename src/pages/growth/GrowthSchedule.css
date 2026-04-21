@@ -1,0 +1,62 @@
+.gs-page { padding: 2rem; height: calc(100vh - var(--topbar-height)); display: flex; flex-direction: column; overflow: hidden; }
+.gs-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-shrink: 0; }
+.gs-header-left { display: flex; flex-direction: column; gap: 0.25rem; }
+.gs-title { font-size: 1.75rem; font-weight: 800; color: var(--text-primary); margin: 0; }
+.gs-date-nav { display: flex; align-items: center; gap: 0.75rem; }
+.gs-date-nav button { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 8px; color: var(--text-secondary); cursor: pointer; padding: 0.35rem; display: flex; }
+.gs-date-label { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); min-width: 200px; text-align: center; }
+.gs-add-btn {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #6c5ce7, #a855f7); color: white; border: none;
+  border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.85rem;
+  box-shadow: 0 0 20px rgba(168,85,247,0.25); transition: all 0.2s;
+}
+.gs-add-btn:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(168,85,247,0.4); }
+
+.gs-layout { display: flex; gap: 1.5rem; flex: 1; min-height: 0; }
+.gs-sidebar { width: 260px; flex-shrink: 0; display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
+.gs-sidebar-section { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 12px; padding: 1rem; }
+.gs-sidebar-section h3 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-tertiary); margin: 0 0 0.75rem; }
+
+.gs-free-time-ring { position: relative; width: 120px; height: 120px; margin: 0 auto 0.75rem; }
+.gs-ring-svg { width: 100%; height: 100%; }
+.gs-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gs-ring-value { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); font-family: 'SF Mono', 'Fira Code', monospace; }
+.gs-ring-label { font-size: 0.65rem; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; }
+
+.gs-time-stats { display: flex; flex-direction: column; gap: 0.35rem; }
+.gs-time-stat { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-secondary); }
+.gs-free-val { color: #2ed573; font-weight: 600; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+.gs-task-pool { display: flex; flex-direction: column; gap: 0.35rem; max-height: 300px; overflow-y: auto; }
+.gs-pool-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.65rem; background: var(--bg-main); border-radius: 8px; cursor: grab; }
+.gs-pool-item:hover { background: rgba(168,85,247,0.08); }
+.gs-pool-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.gs-pool-title { font-size: 0.8rem; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gs-pool-duration { font-size: 0.7rem; color: var(--text-tertiary); font-family: 'SF Mono', 'Fira Code', monospace; }
+.gs-pool-empty { font-size: 0.8rem; color: var(--text-tertiary); text-align: center; padding: 1rem; }
+
+.gs-timeline-container { flex: 1; overflow-y: auto; min-height: 0; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border-light); }
+.gs-timeline { position: relative; min-height: 100%; }
+.gs-time-labels { position: absolute; left: 0; top: 0; width: 60px; z-index: 2; }
+.gs-time-label { height: 60px; font-size: 0.65rem; color: var(--text-tertiary); padding-right: 0.5rem; text-align: right; line-height: 60px; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+.gs-grid { margin-left: 60px; position: relative; padding-right: 1rem; }
+.gs-hour-row { height: 60px; border-bottom: 1px solid var(--border-light); }
+.gs-hour-line { height: 0; border-bottom: 1px dashed var(--border-light); }
+
+.gs-blocks-layer { position: absolute; inset: 0; left: 0; pointer-events: none; }
+.gs-block { position: absolute; left: 4px; right: 4px; border-radius: 8px; padding: 0.35rem 0.5rem; pointer-events: auto; cursor: pointer; transition: all 0.15s; overflow: hidden; }
+.gs-block:hover { transform: scale(1.01); z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.gs-block-header { display: flex; align-items: center; gap: 0.3rem; }
+.gs-block-title { font-size: 0.72rem; font-weight: 600; color: var(--text-primary); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gs-block-delete { background: none; border: none; color: var(--text-tertiary); cursor: pointer; opacity: 0; transition: opacity 0.2s; padding: 0; }
+.gs-block:hover .gs-block-delete { opacity: 1; }
+.gs-block-time { font-size: 0.6rem; font-family: 'SF Mono', 'Fira Code', monospace; font-weight: 500; }
+
+.gs-now-line { position: absolute; left: 0; right: 0; z-index: 5; display: flex; align-items: center; }
+.gs-now-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff4757; flex-shrink: 0; box-shadow: 0 0 8px rgba(255,71,87,0.5); }
+.gs-now-bar { flex: 1; height: 2px; background: #ff4757; opacity: 0.5; }
+
+.gs-time-inputs { display: flex; gap: 0.5rem; }
+.gs-time-inputs select { flex: 1; padding: 0.6rem; border: 1px solid var(--border-light); border-radius: 8px; background: var(--bg-main); color: var(--text-primary); }

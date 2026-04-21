@@ -16,6 +16,7 @@ import {
     Search,
     ChevronLeft,
     ChevronRight,
+    ChevronDown,
     Sun,
     Moon,
     FileText,
@@ -29,7 +30,11 @@ import {
     Zap,
     BarChart2,
     Activity,
-    CheckSquare
+    CheckSquare,
+    Target,
+    CalendarRange,
+    Gamepad2,
+    Trophy
 } from 'lucide-react';
 import useAuthStore from '../../store/useAuthStore';
 import useThemeStore from '../../store/useThemeStore';
@@ -61,11 +66,16 @@ const navItems = [
     { path: '/audit', label: 'Audit Log', icon: History, role: 'Admin' },
 ];
 
+const growthNavItems = [
+    { path: '/growth', label: 'Growth', icon: Target },
+];
+
 export default function DashboardLayout() {
     const { user, logout, hasRole } = useAuthStore();
     const { theme, toggleTheme } = useThemeStore();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [growthExpanded, setGrowthExpanded] = useState(true);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -111,6 +121,34 @@ export default function DashboardLayout() {
                             </li>
                         ))}
                     </ul>
+                    <div className="nav-section">
+                        <button className="nav-section-header" onClick={() => setGrowthExpanded(!growthExpanded)}>
+                            {!isCollapsed && (
+                                <>
+                                    <span className="nav-section-label">PERSONAL GROWTH</span>
+                                    <ChevronDown size={14} className={`nav-section-chevron ${growthExpanded ? 'expanded' : ''}`} />
+                                </>
+                            )}
+                            {isCollapsed && <span className="nav-section-dot" />}
+                        </button>
+                        {growthExpanded && (
+                            <ul className="nav-section-items">
+                                {growthNavItems.map(item => (
+                                    <li key={item.path}>
+                                        <NavLink
+                                            to={item.path}
+                                            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                                            onClick={() => setMobileOpen(false)}
+                                        >
+                                            <item.icon size={20} className="nav-icon" />
+                                            {!isCollapsed && <span className="nav-label">{item.label}</span>}
+                                            {isCollapsed && <div className="nav-tooltip">{item.label}</div>}
+                                        </NavLink>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 </nav>
 
                 <div className="sidebar-footer">
